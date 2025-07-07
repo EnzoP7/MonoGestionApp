@@ -1,0 +1,58 @@
+[
+  {
+    "id": "1",
+    "tipo": "Ingreso",
+    "fecha": "2025-07-01T10:15:00Z",
+    "monto": 15000.5,
+    "descripcion": "Cobro por servicios prestados"
+  },
+  {
+    "id": "2",
+    "tipo": "Egreso",
+    "fecha": "2025-07-02T14:30:00Z",
+    "monto": 2300,
+    "descripcion": "Compra de materiales de oficina"
+  },
+  {
+    "id": "3",
+    "tipo": "Venta",
+    "fecha": "2025-07-03T12:00:00Z",
+    "monto": 5800,
+    "descripcion": "Venta de producto A"
+  },
+  {
+    "id": "4",
+    "tipo": "Compra",
+    "fecha": "2025-07-04T09:00:00Z",
+    "monto": 3200,
+    "descripcion": "Compra a proveedor externo"
+  },
+  {
+    "id": "5",
+    "tipo": "Ingreso",
+    "fecha": "2025-07-05T16:20:00Z",
+    "monto": 9400,
+    "descripcion": "Transferencia bancaria por proyecto"
+  },
+  {
+    "id": "6",
+    "tipo": "Egreso",
+    "fecha": "2025-07-06T11:45:00Z",
+    "monto": 1700,
+    "descripcion": "Pago de servicios (luz, agua)"
+  },
+  {
+    "id": "7",
+    "tipo": "Venta",
+    "fecha": "2025-07-07T13:10:00Z",
+    "monto": 12400,
+    "descripcion": "Venta de paquete completo"
+  },
+  {
+    "id": "8",
+    "tipo": "Compra",
+    "fecha": "2025-07-08T08:55:00Z",
+    "monto": 4300,
+    "descripcion": "Compra de stock mensual"
+  }
+]
