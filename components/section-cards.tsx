@@ -16,7 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useDashboardData } from "@/lib/queries/dashboard/useDashboardData";
+import { useDashboardData } from "@/lib/react-query/queries/dashboard/useDashboardData";
 
 interface SectionCardsProps {
   userId: string;

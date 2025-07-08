@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { useVentasPorDia } from "@/lib/queries/ventas/useVentasPorDia";
+import { useVentasPorDia } from "@/lib/react-query/queries/ventas/useVentasPorDia";
 
 interface Props {
   userId: string;
@@ -122,11 +122,13 @@ export function ChartAreaInteractive({ userId }: Props) {
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) =>
-                    new Date(value).toLocaleDateString("es-UY", {
-                      month: "short",
-                      day: "numeric",
-                    })
+                  labelFormatter={(value: string | number | undefined) =>
+                    value !== undefined
+                      ? new Date(value).toLocaleDateString("es-UY", {
+                          month: "short",
+                          day: "numeric",
+                        })
+                      : ""
                   }
                   indicator="dot"
                 />

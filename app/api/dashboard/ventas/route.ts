@@ -1,5 +1,5 @@
 // app/api/dashboard/ventas/route.ts
-import { getVentasPorDia } from "@/lib/dashboard/sales";
+import { getVentasPorDia } from "@/lib/dashboard/getVentasPorDia";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {

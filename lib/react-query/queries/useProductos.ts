@@ -1,7 +1,7 @@
 // lib/queries/useProductos.ts
 import { useQuery } from "@tanstack/react-query";
 import { Producto } from "@/types/producto";
-import { DEFAULT_QUERY_OPTIONS } from "../react-query/options";
+import { DEFAULT_QUERY_OPTIONS } from "../options";
 
 export const useProductos = (userId: string) =>
   useQuery<Producto[]>({

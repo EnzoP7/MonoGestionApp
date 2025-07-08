@@ -24,7 +24,6 @@ export function LoginForm({
     setLoading(true);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const res = await loginUser(email, password);
       toast.success("Inicio exitoso");
       router.push("/dashboard");

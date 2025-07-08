@@ -20,7 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CreateProductoModal } from "./CreateProductoModal";
-import { useProductos } from "@/lib/queries/useProductos";
+import { useProductos } from "@/lib/react-query/queries/useProductos";
 
 export function ProductosTable({ userId }: { userId: string }) {
   const { data: productos = [], isLoading, error } = useProductos(userId);

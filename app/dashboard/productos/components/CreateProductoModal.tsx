@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCrearProducto } from "@/lib/react-query/mutations/productos/useCrearProducto";
 
 export function CreateProductoModal({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
@@ -24,40 +24,17 @@ export function CreateProductoModal({ userId }: { userId: string }) {
     activo: true,
   });
 
-  const queryClient = useQueryClient();
-
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const mutation = useMutation({
-    mutationFn: async () => {
-      const res = await fetch("/api/productos/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...form,
-          precio: parseFloat(form.precio),
-          cantidad: parseInt(form.cantidad),
-        }),
-      });
-
-      if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.message || "Error al crear el producto");
-      }
-
-      return res.json();
-    },
+  const mutation = useCrearProducto({
+    userId,
+    form,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["productos", userId] });
-      queryClient.invalidateQueries({ queryKey: ["dashboardData", userId] });
       setOpen(false);
       setForm({
         nombre: "",
@@ -66,10 +43,6 @@ export function CreateProductoModal({ userId }: { userId: string }) {
         cantidad: "",
         activo: true,
       });
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onError: (error: any) => {
-      alert(error.message);
     },
   });
 

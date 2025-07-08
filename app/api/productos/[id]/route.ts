@@ -4,11 +4,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
 
+// ✅ Tipo seguro de contexto (sin Promise)
+type RouteContext = {
+  params: {
+    id: string;
+  };
+};
+
 // ✅ Obtener un producto por ID
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, { params }: RouteContext) {
   try {
     const producto = await prisma.producto.findUnique({
       where: { id: params.id },
@@ -31,14 +35,11 @@ export async function GET(
   }
 }
 
-// ✅ Modificar producto
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// ✅ Modificar un producto
+export async function PUT(req: NextRequest, { params }: RouteContext) {
   try {
-    const body = await req.json();
-    const { nombre, descripcion, precio, cantidad, activo, userId } = body;
+    const { nombre, descripcion, precio, cantidad, activo, userId } =
+      await req.json();
 
     if (!userId || !params.id) {
       return NextResponse.json(
@@ -49,17 +50,10 @@ export async function PUT(
 
     const productoActualizado = await prisma.producto.update({
       where: { id: params.id },
-      data: {
-        nombre,
-        descripcion,
-        precio,
-        cantidad,
-        activo,
-      },
+      data: { nombre, descripcion, precio, cantidad, activo },
     });
 
     revalidateTag(`dashboard:${userId}`);
-
     return NextResponse.json(productoActualizado);
   } catch (error) {
     console.error("[PRODUCTO_PUT]", error);
@@ -70,14 +64,10 @@ export async function PUT(
   }
 }
 
-// ✅ Eliminar producto
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// ✅ Eliminar un producto
+export async function DELETE(req: NextRequest, { params }: RouteContext) {
   try {
-    const searchParams = new URL(req.url).searchParams;
-    const userId = searchParams.get("userId");
+    const userId = new URL(req.url).searchParams.get("userId");
 
     if (!userId || !params.id) {
       return NextResponse.json(
@@ -91,7 +81,6 @@ export async function DELETE(
     });
 
     revalidateTag(`dashboard:${userId}`);
-
     return NextResponse.json(productoEliminado);
   } catch (error) {
     console.error("[PRODUCTO_DELETE]", error);
