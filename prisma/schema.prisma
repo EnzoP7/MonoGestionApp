@@ -29,6 +29,16 @@ model User {
 
   role     String     @default("user")
   Producto Producto[]
+
+  Proveedor Proveedor[]
+
+  Reporte Reporte[]
+
+  Movimiento Movimiento[]
+
+  CategoriaEgreso CategoriaEgreso[]
+
+  CategoriaIngreso CategoriaIngreso[]
 }
 
 model Cliente {
@@ -46,26 +56,31 @@ model Cliente {
 }
 
 model Ingreso {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  fecha       DateTime
-  monto       Float
-  descripcion String?
-
-  createdAt DateTime @default(now())
+  id                 String            @id @default(cuid())
+  userId             String
+  user               User              @relation(fields: [userId], references: [id])
+  fecha              DateTime
+  monto              Float
+  descripcion        String?
+  categoriaIngresoId String?
+  categoriaIngreso   CategoriaIngreso? @relation(fields: [categoriaIngresoId], references: [id])
+  createdAt          DateTime          @default(now())
 }
 
 model Egreso {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  fecha       DateTime
-  monto       Float
-  categoria   String
-  descripcion String?
+  id                String           @id @default(cuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id])
+  fecha             DateTime
+  monto             Float
+  categoria         String
+  descripcion       String?
+  categoriaEgresoId String?
+  categoriaEgreso   CategoriaEgreso? @relation(fields: [categoriaEgresoId], references: [id])
 
   createdAt DateTime @default(now())
+  compraId  String?
+  Compra    Compra[]
 }
 
 model Producto {
@@ -78,16 +93,53 @@ model Producto {
   cantidad    Int
   activo      Boolean  @default(true)
   createdAt   DateTime @default(now())
+
+  compras CompraProducto[]
+
+  VentaProducto VentaProducto[]
 }
 
 model Compra {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+  proveedorId String?
+  proveedor   Proveedor? @relation(fields: [proveedorId], references: [id])
   fecha       DateTime
-  proveedor   String?
   monto       Float
   descripcion String?
+
+  createdAt DateTime @default(now())
+
+  egresoId String? // 👈 ID del egreso vinculado
+  egreso   Egreso? @relation(fields: [egresoId], references: [id])
+
+  productos CompraProducto[]
+}
+
+model CompraProducto {
+  id             String   @id @default(cuid())
+  compraId       String
+  compra         Compra   @relation(fields: [compraId], references: [id])
+  productoId     String
+  producto       Producto @relation(fields: [productoId], references: [id])
+  cantidad       Int
+  precioUnitario Float
+
+  createdAt DateTime @default(now())
+}
+
+model Proveedor {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id])
+  nombre      String
+  telefono    String?
+  email       String?
+  direccion   String?
+  descripcion String?
+
+  compras Compra[]
 
   createdAt DateTime @default(now())
 }
@@ -101,6 +153,21 @@ model Venta {
   fecha     DateTime
   monto     Float
   servicios VentaServicio[]
+  tipo      String
+
+  createdAt DateTime @default(now())
+
+  VentaProducto VentaProducto[]
+}
+
+model VentaProducto {
+  id         String   @id @default(cuid())
+  ventaId    String
+  venta      Venta    @relation(fields: [ventaId], references: [id])
+  productoId String
+  producto   Producto @relation(fields: [productoId], references: [id])
+  cantidad   Int
+  precio     Float
 
   createdAt DateTime @default(now())
 }
@@ -125,4 +192,52 @@ model VentaServicio {
   servicio   Servicio @relation(fields: [servicioId], references: [id])
   cantidad   Int      @default(1)
   precio     Float // precio usado en esta venta
+}
+
+model Movimiento {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  tipo        String // "Ingreso", "Egreso", "Venta", "Compra"
+  fecha       DateTime
+  monto       Float
+  descripcion String?
+
+  createdAt DateTime @default(now())
+}
+
+model Reporte {
+  id     String   @id @default(cuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id])
+  tipo   String // "Mensual", "Anual", "Personalizado"
+  desde  DateTime
+  hasta  DateTime
+  url    String? // Link a PDF generado, si se aplica
+
+  creadoEn DateTime @default(now())
+}
+
+model CategoriaIngreso {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  nombre String
+  tipo   String // "Ingreso", "Egreso", "Producto", etc.
+
+  createdAt DateTime @default(now())
+
+  Ingreso Ingreso[]
+}
+
+model CategoriaEgreso {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+  nombre String
+  tipo   String // "Ingreso", "Egreso", "Producto", etc.
+
+  createdAt DateTime @default(now())
+
+  Egreso Egreso[]
 }

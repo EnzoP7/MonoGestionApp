@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Producto } from "@/types/producto";
+import { Proveedor } from "@/types/proveedor";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -19,20 +19,9 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-} from "@/components/ui/select";
 import { Eye, Pencil, Trash2 } from "lucide-react";
-import { CreateProductoModal } from "./CreateProductoModal";
-import { useProductos } from "@/lib/react-query/queries/useProductos";
-import { useEliminarProducto } from "@/lib/react-query/mutations/productos/useEliminarProducto";
-import { EditProductoModal } from "./EditProductoModal";
+import { useEliminarProveedor } from "@/lib/react-query/mutations/proveedores/useEliminarProveedor";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -43,76 +32,38 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { CreateProveedorModal } from "./CreateProveedorModal";
+import { EditProveedorModal } from "./EditProveedorModal";
+import { useProveedores } from "@/lib/react-query/queries/proveedores/useProveedores";
 
-export function ProductosTable({ userId }: { userId: string }) {
-  const { data: productos = [], isLoading, error } = useProductos(userId);
-
-  const [filterField, setFilterField] = useState("nombre");
-  const [filterText, setFilterText] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState("todos");
-
-  const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(
-    null
-  );
+export function ProveedoresTable({ userId }: { userId: string }) {
+  const { data: proveedores = [], isLoading, error } = useProveedores(userId);
+  const [globalFilter, setGlobalFilter] = useState("");
+  const [proveedorAEliminar, setProveedorAEliminar] =
+    useState<Proveedor | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [productoSeleccionado, setProductoSeleccionado] =
-    useState<Producto | null>(null);
+  const [proveedorSeleccionado, setProveedorSeleccionado] =
+    useState<Proveedor | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const deleteMutation = useEliminarProducto({ userId });
+  const deleteMutation = useEliminarProveedor({ userId });
 
   const filteredData = useMemo(() => {
-    return productos.filter((p) => {
-      const matchesEstado =
-        estadoFilter === "todos"
-          ? true
-          : estadoFilter === "activo"
-          ? p.activo
-          : !p.activo;
+    return proveedores.filter((p) =>
+      p.nombre.toLowerCase().includes(globalFilter.toLowerCase())
+    );
+  }, [proveedores, globalFilter]);
 
-      const text = filterText.trim().toLowerCase();
-
-      const matchesCampo = (() => {
-        if (!text) return true;
-        if (filterField === "nombre") {
-          return p.nombre.toLowerCase().includes(text);
-        } else if (filterField === "precio") {
-          const val = parseFloat(text);
-          return !isNaN(val) && p.precio >= val;
-        } else if (filterField === "cantidad") {
-          const val = parseInt(text);
-          return !isNaN(val) && p.cantidad >= val;
-        }
-        return true;
-      })();
-
-      return matchesEstado && matchesCampo;
-    });
-  }, [productos, estadoFilter, filterField, filterText]);
-
-  const columns: ColumnDef<Producto>[] = [
+  const columns: ColumnDef<Proveedor>[] = [
     { accessorKey: "nombre", header: "Nombre" },
-    {
-      accessorKey: "precio",
-      header: "Precio",
-      cell: ({ row }) => <div>${row.original.precio.toFixed(2)}</div>,
-    },
-    { accessorKey: "cantidad", header: "Cantidad" },
-    {
-      accessorKey: "activo",
-      header: "Estado",
-      cell: ({ row }) => (
-        <Badge variant={row.original.activo ? "default" : "destructive"}>
-          {row.original.activo ? "Activo" : "Inactivo"}
-        </Badge>
-      ),
-    },
+    { accessorKey: "telefono", header: "Teléfono" },
+    { accessorKey: "email", header: "Email" },
+    { accessorKey: "direccion", header: "Dirección" },
     {
       id: "acciones",
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex justify-center gap-2">
-          <Link href={`/dashboard/productos/${row.original.id}?view=1`}>
+          <Link href={`/dashboard/proveedores/${row.original.id}?view=1`}>
             <Button variant="ghost" size="icon">
               <Eye className="h-4 w-4 text-primary" />
             </Button>
@@ -122,18 +73,17 @@ export function ProductosTable({ userId }: { userId: string }) {
             variant="ghost"
             size="icon"
             onClick={() => {
-              setProductoSeleccionado(row.original);
+              setProveedorSeleccionado(row.original);
               setIsEditModalOpen(true);
             }}
           >
             <Pencil className="h-4 w-4 text-muted-foreground" />
           </Button>
-
           <Button
             variant="ghost"
             size="icon"
             onClick={() => {
-              setProductoAEliminar(row.original);
+              setProveedorAEliminar(row.original);
               setIsDeleteModalOpen(true);
             }}
           >
@@ -151,57 +101,26 @@ export function ProductosTable({ userId }: { userId: string }) {
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  if (isLoading) return <div className="p-4">Cargando productos...</div>;
+  if (isLoading) return <div className="p-4">Cargando proveedores...</div>;
   if (error)
-    return <div className="p-4 text-red-500">Error al cargar productos</div>;
+    return <div className="p-4 text-red-500">Error al cargar proveedores</div>;
 
   return (
     <div className="space-y-6 px-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Productos</h2>
-        <CreateProductoModal userId={userId} />
+        <h2 className="text-2xl font-semibold">Proveedores</h2>
+        <CreateProveedorModal userId={userId} />
       </div>
 
-      <div className="flex flex-wrap gap-4">
-        <Select onValueChange={setFilterField} value={filterField}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Campo" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="nombre">Nombre</SelectItem>
-            <SelectItem value="precio">Precio</SelectItem>
-            <SelectItem value="cantidad">Cantidad</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Input
-          placeholder={
-            filterField === "nombre"
-              ? "Buscar..."
-              : filterField === "precio"
-              ? "Precio mínimo"
-              : "Cantidad mínima"
-          }
-          type={filterField === "nombre" ? "text" : "number"}
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-          className="w-48"
-        />
-
-        <Select onValueChange={setEstadoFilter} value={estadoFilter}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Filtrar por estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="activo">Activos</SelectItem>
-            <SelectItem value="inactivo">Inactivos</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Input
+        placeholder="Buscar por nombre..."
+        value={globalFilter}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        className="max-w-sm"
+      />
 
       <div className="overflow-x-auto rounded-md border">
-        <Table>
+        <Table className="min-w-[600px]">
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
@@ -257,14 +176,14 @@ export function ProductosTable({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {productoSeleccionado && (
-        <EditProductoModal
+      {proveedorSeleccionado && (
+        <EditProveedorModal
           userId={userId}
-          producto={productoSeleccionado}
+          proveedor={proveedorSeleccionado}
           isOpen={isEditModalOpen}
           onClose={() => {
             setIsEditModalOpen(false);
-            setProductoSeleccionado(null);
+            setProveedorSeleccionado(null);
           }}
         />
       )}
@@ -273,11 +192,11 @@ export function ProductosTable({ userId }: { userId: string }) {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              ¿Estás seguro de eliminar este producto?
+              ¿Estás seguro de eliminar este proveedor?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El producto{" "}
-              <strong>{productoAEliminar?.nombre}</strong> será eliminado
+              Esta acción no se puede deshacer. El proveedor{" "}
+              <strong>{proveedorAEliminar?.nombre}</strong> será eliminado
               permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -285,7 +204,7 @@ export function ProductosTable({ userId }: { userId: string }) {
             <AlertDialogCancel
               onClick={() => {
                 setIsDeleteModalOpen(false);
-                setProductoAEliminar(null);
+                setProveedorAEliminar(null);
               }}
             >
               Cancelar
@@ -293,10 +212,10 @@ export function ProductosTable({ userId }: { userId: string }) {
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600 text-white"
               onClick={() => {
-                if (productoAEliminar) {
-                  deleteMutation.mutate(productoAEliminar.id);
+                if (proveedorAEliminar) {
+                  deleteMutation.mutate(proveedorAEliminar.id);
                   setIsDeleteModalOpen(false);
-                  setProductoAEliminar(null);
+                  setProveedorAEliminar(null);
                 }
               }}
             >

@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
-import { Producto } from "@/types/producto";
 import {
   ColumnDef,
   getCoreRowModel,
@@ -29,10 +28,6 @@ import {
   SelectContent,
 } from "@/components/ui/select";
 import { Eye, Pencil, Trash2 } from "lucide-react";
-import { CreateProductoModal } from "./CreateProductoModal";
-import { useProductos } from "@/lib/react-query/queries/useProductos";
-import { useEliminarProducto } from "@/lib/react-query/mutations/productos/useEliminarProducto";
-import { EditProductoModal } from "./EditProductoModal";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -43,76 +38,65 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
+import { Compra, Proveedor } from "@prisma/client";
+import { useCompras } from "@/lib/react-query/queries/compras/useCompras";
+import { CreateCompraModal } from "./CreateCompraModal";
+import { useEliminarCompra } from "@/lib/react-query/mutations/compras/useEliminarCompra";
+import { CompraConProveedor } from "@/types/compra";
+import { EditCompraModal } from "./EditCompraModal";
 
-export function ProductosTable({ userId }: { userId: string }) {
-  const { data: productos = [], isLoading, error } = useProductos(userId);
+export function ComprasTable({ userId }: { userId: string }) {
+  const { data: compras = [], isLoading, error } = useCompras(userId);
 
-  const [filterField, setFilterField] = useState("nombre");
+  const [filterField, setFilterField] = useState("proveedor");
   const [filterText, setFilterText] = useState("");
-  const [estadoFilter, setEstadoFilter] = useState("todos");
-
-  const [productoAEliminar, setProductoAEliminar] = useState<Producto | null>(
+  const [compraAEliminar, setCompraAEliminar] =
+    useState<CompraConProveedor | null>(null);
+  const [compraAEditar, setCompraAEditar] = useState<CompraConProveedor | null>(
     null
   );
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [productoSeleccionado, setProductoSeleccionado] =
-    useState<Producto | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const deleteMutation = useEliminarProducto({ userId });
+  const deleteMutation = useEliminarCompra({ userId });
 
   const filteredData = useMemo(() => {
-    return productos.filter((p) => {
-      const matchesEstado =
-        estadoFilter === "todos"
-          ? true
-          : estadoFilter === "activo"
-          ? p.activo
-          : !p.activo;
-
+    return compras.filter((c) => {
       const text = filterText.trim().toLowerCase();
-
-      const matchesCampo = (() => {
-        if (!text) return true;
-        if (filterField === "nombre") {
-          return p.nombre.toLowerCase().includes(text);
-        } else if (filterField === "precio") {
-          const val = parseFloat(text);
-          return !isNaN(val) && p.precio >= val;
-        } else if (filterField === "cantidad") {
-          const val = parseInt(text);
-          return !isNaN(val) && p.cantidad >= val;
-        }
-        return true;
-      })();
-
-      return matchesEstado && matchesCampo;
+      if (!text) return true;
+      if (filterField === "proveedor") {
+        return c.proveedor?.nombre?.toLowerCase().includes(text);
+      } else if (filterField === "monto") {
+        const val = parseFloat(text);
+        return !isNaN(val) && c.monto >= val;
+      }
+      return true;
     });
-  }, [productos, estadoFilter, filterField, filterText]);
+  }, [compras, filterField, filterText]);
 
-  const columns: ColumnDef<Producto>[] = [
-    { accessorKey: "nombre", header: "Nombre" },
+  const columns: ColumnDef<CompraConProveedor>[] = [
     {
-      accessorKey: "precio",
-      header: "Precio",
-      cell: ({ row }) => <div>${row.original.precio.toFixed(2)}</div>,
+      accessorKey: "proveedor",
+      header: "Proveedor",
+      cell: ({ row }) => row.original.proveedor?.nombre || "Sin proveedor",
     },
-    { accessorKey: "cantidad", header: "Cantidad" },
     {
-      accessorKey: "activo",
-      header: "Estado",
-      cell: ({ row }) => (
-        <Badge variant={row.original.activo ? "default" : "destructive"}>
-          {row.original.activo ? "Activo" : "Inactivo"}
-        </Badge>
-      ),
+      accessorKey: "fecha",
+      header: "Fecha",
+      cell: ({ row }) => new Date(row.original.fecha).toLocaleDateString(),
+    },
+    {
+      accessorKey: "monto",
+      header: "Monto",
+      cell: ({ row }) => <div>${row.original.monto.toFixed(2)}</div>,
     },
     {
       id: "acciones",
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex justify-center gap-2">
-          <Link href={`/dashboard/productos/${row.original.id}?view=1`}>
+          <Link href={`/compras/${row.original.id}`}>
             <Button variant="ghost" size="icon">
               <Eye className="h-4 w-4 text-primary" />
             </Button>
@@ -122,18 +106,18 @@ export function ProductosTable({ userId }: { userId: string }) {
             variant="ghost"
             size="icon"
             onClick={() => {
-              setProductoSeleccionado(row.original);
+              setCompraAEditar(row.original);
               setIsEditModalOpen(true);
             }}
           >
-            <Pencil className="h-4 w-4 text-muted-foreground" />
+            <Pencil className="h-4 w-4 text-blue-500" />
           </Button>
 
           <Button
             variant="ghost"
             size="icon"
             onClick={() => {
-              setProductoAEliminar(row.original);
+              setCompraAEliminar(row.original);
               setIsDeleteModalOpen(true);
             }}
           >
@@ -144,22 +128,22 @@ export function ProductosTable({ userId }: { userId: string }) {
     },
   ];
 
-  const table = useReactTable({
+  const table = useReactTable<CompraConProveedor>({
     data: filteredData,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
   });
 
-  if (isLoading) return <div className="p-4">Cargando productos...</div>;
+  if (isLoading) return <div className="p-4">Cargando compras...</div>;
   if (error)
-    return <div className="p-4 text-red-500">Error al cargar productos</div>;
+    return <div className="p-4 text-red-500">Error al cargar compras</div>;
 
   return (
     <div className="space-y-6 px-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-semibold">Productos</h2>
-        <CreateProductoModal userId={userId} />
+        <h2 className="text-2xl font-semibold">Compras</h2>
+        <CreateCompraModal userId={userId} />
       </div>
 
       <div className="flex flex-wrap gap-4">
@@ -168,36 +152,20 @@ export function ProductosTable({ userId }: { userId: string }) {
             <SelectValue placeholder="Campo" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="nombre">Nombre</SelectItem>
-            <SelectItem value="precio">Precio</SelectItem>
-            <SelectItem value="cantidad">Cantidad</SelectItem>
+            <SelectItem value="proveedor">Proveedor</SelectItem>
+            <SelectItem value="monto">Monto mínimo</SelectItem>
           </SelectContent>
         </Select>
 
         <Input
           placeholder={
-            filterField === "nombre"
-              ? "Buscar..."
-              : filterField === "precio"
-              ? "Precio mínimo"
-              : "Cantidad mínima"
+            filterField === "proveedor" ? "Buscar proveedor..." : "Monto mínimo"
           }
-          type={filterField === "nombre" ? "text" : "number"}
+          type={filterField === "monto" ? "number" : "text"}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           className="w-48"
         />
-
-        <Select onValueChange={setEstadoFilter} value={estadoFilter}>
-          <SelectTrigger className="w-[160px]">
-            <SelectValue placeholder="Filtrar por estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos</SelectItem>
-            <SelectItem value="activo">Activos</SelectItem>
-            <SelectItem value="inactivo">Inactivos</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="overflow-x-auto rounded-md border">
@@ -257,35 +225,20 @@ export function ProductosTable({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {productoSeleccionado && (
-        <EditProductoModal
-          userId={userId}
-          producto={productoSeleccionado}
-          isOpen={isEditModalOpen}
-          onClose={() => {
-            setIsEditModalOpen(false);
-            setProductoSeleccionado(null);
-          }}
-        />
-      )}
-
       <AlertDialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              ¿Estás seguro de eliminar este producto?
-            </AlertDialogTitle>
+            <AlertDialogTitle>¿Eliminar compra?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El producto{" "}
-              <strong>{productoAEliminar?.nombre}</strong> será eliminado
-              permanentemente.
+              Esta acción no se puede deshacer. ¿Seguro que querés eliminar esta
+              compra?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={() => {
                 setIsDeleteModalOpen(false);
-                setProductoAEliminar(null);
+                setCompraAEliminar(null);
               }}
             >
               Cancelar
@@ -293,10 +246,10 @@ export function ProductosTable({ userId }: { userId: string }) {
             <AlertDialogAction
               className="bg-red-500 hover:bg-red-600 text-white"
               onClick={() => {
-                if (productoAEliminar) {
-                  deleteMutation.mutate(productoAEliminar.id);
+                if (compraAEliminar) {
+                  deleteMutation.mutate(compraAEliminar.id);
                   setIsDeleteModalOpen(false);
-                  setProductoAEliminar(null);
+                  setCompraAEliminar(null);
                 }
               }}
             >
@@ -305,6 +258,15 @@ export function ProductosTable({ userId }: { userId: string }) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {compraAEditar && (
+        <EditCompraModal
+          userId={userId}
+          compra={compraAEditar}
+          open={isEditModalOpen}
+          onOpenChange={() => setIsEditModalOpen(false)} // ✅ Esto sí es válido
+        />
+      )}
     </div>
   );
 }

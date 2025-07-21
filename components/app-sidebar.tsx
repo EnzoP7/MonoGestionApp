@@ -31,29 +31,55 @@ import {
 } from "@/components/ui/sidebar";
 
 const data = {
-  navMain: [
-    { title: "Inicio", url: "/dashboard", icon: IconDashboard },
-    { title: "Finanzas", url: "/finanzas", icon: IconCurrencyDollar },
-    { title: "Notificaciones", url: "/notificaciones", icon: IconBell },
-    { title: "Ingresos", url: "/ingresos", icon: IconDatabase },
-    { title: "Egresos", url: "/egresos", icon: IconFileDescription },
-    { title: "Ventas", url: "/ventas", icon: IconListDetails },
-    { title: "Productos", url: "/dashboard/productos", icon: IconFolder },
-    { title: "Clientes", url: "/clientes", icon: IconUsers },
-  ],
-  documents: [
-    {
-      name: "Reportes Mensuales",
-      url: "/reportes/mensuales",
-      icon: IconReport,
-    },
-    { name: "Comparativas", url: "/reportes/comparativas", icon: IconChartBar },
-    {
-      name: "Descargas Excel",
-      url: "/reportes/exportaciones",
-      icon: IconFileWord,
-    },
-  ],
+  secciones: {
+    inicio: [
+      { name: "Inicio", url: "/dashboard", icon: IconDashboard },
+      { name: "Finanzas", url: "/finanzas", icon: IconCurrencyDollar },
+      { name: "Movimientos", url: "/movimientos", icon: IconInnerShadowTop },
+    ],
+    ingresosEgresos: [
+      { name: "Ingresos", url: "/ingresos", icon: IconDatabase },
+      { name: "Egresos", url: "/egresos", icon: IconFileDescription },
+      { name: "Categorías", url: "/categorias", icon: IconFolder },
+    ],
+    ventasClientes: [
+      { name: "Ventas", url: "/ventas", icon: IconListDetails },
+      { name: "Clientes", url: "/clientes", icon: IconUsers },
+      { name: "Servicios", url: "/servicios", icon: IconFileWord },
+    ],
+    inventarioProveedores: [
+      { name: "Productos", url: "/dashboard/productos", icon: IconFolder },
+      { name: "Compras", url: "/dashboard/compras", icon: IconFileDescription },
+      { name: "Proveedores", url: "/dashboard/proveedores", icon: IconUsers },
+    ],
+    comunicacion: [
+      { name: "Notificaciones", url: "/notificaciones", icon: IconBell },
+    ],
+  },
+
+  reportes: {
+    mensuales: [
+      {
+        name: "Reportes Mensuales",
+        url: "/reportes/mensuales",
+        icon: IconReport,
+      },
+    ],
+    comparativas: [
+      {
+        name: "Comparativas",
+        url: "/reportes/comparativas",
+        icon: IconChartBar,
+      },
+    ],
+    exportaciones: [
+      {
+        name: "Exportaciones",
+        url: "/reportes/exportaciones",
+        icon: IconFileWord,
+      },
+    ],
+  },
 };
 
 export function AppSidebar({
@@ -81,8 +107,33 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavDocuments title="Inicio" items={data.secciones.inicio} />
+        <NavDocuments
+          title="Ingresos y Egresos"
+          items={data.secciones.ingresosEgresos}
+        />
+        <NavDocuments
+          title="Ventas y Clientes"
+          items={data.secciones.ventasClientes}
+        />
+        <NavDocuments
+          title="Inventario y Proveedores"
+          items={data.secciones.inventarioProveedores}
+        />
+        <NavDocuments
+          title="Comunicación"
+          items={data.secciones.comunicacion}
+        />
+
+        <NavDocuments
+          title="Reportes Mensuales"
+          items={data.reportes.mensuales}
+        />
+        <NavDocuments title="Comparativas" items={data.reportes.comparativas} />
+        <NavDocuments
+          title="Exportaciones"
+          items={data.reportes.exportaciones}
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

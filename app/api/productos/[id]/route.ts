@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 // ✅ GET: Obtener un producto
 export async function GET(req: NextRequest, context: any) {
   try {
-    const id = context.params.id;
+    const id = (await context.params).id;
     console.log("[PRODUCTO_GET] Buscando producto con ID:", id);
 
     if (!id) {
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest, context: any) {
 // ✅ PUT: Modificar un producto
 export async function PUT(req: NextRequest, context: any) {
   try {
-    const id = context.params.id;
+    const id = (await context.params).id;
     const body = await req.json();
     const { nombre, descripcion, precio, cantidad, activo, userId } = body;
 
@@ -69,12 +69,11 @@ export async function PUT(req: NextRequest, context: any) {
 // ✅ DELETE: Eliminar un producto
 export async function DELETE(req: NextRequest, context: any) {
   try {
-    const id = context.params.id;
-    const userId = new URL(req.url).searchParams.get("userId");
+    const id = (await context.params).id;
 
-    console.log("[PRODUCTO_DELETE] ID:", id, "UserID:", userId);
+    console.log("[PRODUCTO_DELETE] ID:", id);
 
-    if (!id || !userId) {
+    if (!id) {
       return NextResponse.json(
         { error: "Faltan campos obligatorios." },
         { status: 400 }
