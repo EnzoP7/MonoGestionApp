@@ -8,7 +8,7 @@ export function useEliminarCompra({ userId }: { userId: string }) {
 
   return useMutation({
     mutationFn: async (compraId: string) => {
-      const res = await fetch(`/api/dashboard/compras/${compraId}`, {
+      const res = await fetch(`/api/compras/${userId}/${compraId}`, {
         method: "DELETE",
       });
 

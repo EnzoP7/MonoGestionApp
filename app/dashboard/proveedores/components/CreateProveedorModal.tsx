@@ -24,8 +24,16 @@ const schema = z.object({
   descripcion: z.string().optional(),
 });
 
-export function CreateProveedorModal({ userId }: { userId: string }) {
-  const [open, setOpen] = useState(false);
+type Props = {
+  userId: string;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+};
+
+export function CreateProveedorModal({ userId, open, onOpenChange }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+
   const crearProveedor = useCreateProveedor({ userId });
 
   const {
@@ -35,17 +43,36 @@ export function CreateProveedorModal({ userId }: { userId: string }) {
     reset,
   } = useForm({ resolver: zodResolver(schema) });
 
-  const onSubmit = (data: any) => {
-    crearProveedor.mutate({ ...data, userId }); // ✅ Agrega el userId al body
-    setOpen(false);
+  const handleClose = () => {
+    if (isControlled) {
+      onOpenChange(false);
+    } else {
+      setInternalOpen(false);
+    }
     reset();
   };
 
+  const onSubmit = (data: any) => {
+    crearProveedor.mutate(
+      { ...data, userId },
+      {
+        onSuccess: () => {
+          handleClose();
+        },
+      }
+    );
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button> + Nuevo Proveedor</Button>
-      </DialogTrigger>
+    <Dialog
+      open={isControlled ? open : internalOpen}
+      onOpenChange={isControlled ? onOpenChange : setInternalOpen}
+    >
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button> + Nuevo Proveedor</Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Crear Proveedor</DialogTitle>

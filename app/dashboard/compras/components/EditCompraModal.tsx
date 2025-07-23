@@ -161,59 +161,79 @@ export function EditCompraModal({ userId, compra, open, onOpenChange }: Props) {
           <div className="space-y-4">
             <Label>Productos</Label>
             {productos.map((p, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Select
-                  value={p.productoId}
-                  onValueChange={(val) =>
-                    actualizarProducto(index, "productoId", val)
-                  }
-                >
-                  <SelectTrigger className="w-1/3">
-                    <SelectValue placeholder="Producto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productosDisponibles.map((prod) => (
-                      <SelectItem key={prod.id} value={prod.id}>
-                        {prod.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  placeholder="Cantidad"
-                  value={p.cantidad}
-                  onChange={(e) =>
-                    actualizarProducto(
-                      index,
-                      "cantidad",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="w-1/4"
-                />
-                <Input
-                  type="number"
-                  placeholder="Precio Unitario"
-                  value={p.precioUnitario}
-                  onChange={(e) =>
-                    actualizarProducto(
-                      index,
-                      "precioUnitario",
-                      parseFloat(e.target.value)
-                    )
-                  }
-                  className="w-1/4"
-                />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => eliminarProducto(index)}
-                >
-                  ×
-                </Button>
+              <div
+                key={index}
+                className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end"
+              >
+                <div className="space-y-1">
+                  <Label>Producto</Label>
+                  <Select
+                    value={p.productoId}
+                    onValueChange={(val) =>
+                      actualizarProducto(index, "productoId", val)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Seleccionar producto" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {productosDisponibles.map((prod) => (
+                        <SelectItem key={prod.id} value={prod.id}>
+                          {prod.nombre}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Cantidad</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={p.cantidad}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      actualizarProducto(
+                        index,
+                        "cantidad",
+                        Number.isNaN(val) ? 0 : val
+                      );
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Precio Unitario</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={p.precioUnitario}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      actualizarProducto(
+                        index,
+                        "precioUnitario",
+                        Number.isNaN(val) ? 0 : val
+                      );
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => eliminarProducto(index)}
+                    className="mt-5"
+                  >
+                    ×
+                  </Button>
+                </div>
               </div>
             ))}
+
             <Button variant="outline" onClick={agregarProducto}>
               + Agregar producto
             </Button>

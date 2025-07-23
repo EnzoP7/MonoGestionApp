@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
+// ✅ DELETE: Eliminar compra, su egreso, su movimiento y revertir stock
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: { id: string } }
@@ -15,10 +16,37 @@ export async function DELETE(
   }
 
   try {
-    await prisma.compraProducto.deleteMany({ where: { compraId: id } });
-    await prisma.compra.delete({ where: { id } });
+    await prisma.$transaction(async (tx) => {
+      // Obtener productos y revertir stock
+      const productos = await tx.compraProducto.findMany({
+        where: { compraId: id },
+      });
 
-    return NextResponse.json({ message: "Compra eliminada correctamente" });
+      for (const p of productos) {
+        await tx.producto.update({
+          where: { id: p.productoId },
+          data: {
+            cantidad: { decrement: p.cantidad },
+          },
+        });
+      }
+
+      // Eliminar productos de la compra
+      await tx.compraProducto.deleteMany({ where: { compraId: id } });
+
+      // Eliminar egreso relacionado
+      await tx.egreso.deleteMany({ where: { compraId: id } });
+
+      // Eliminar movimiento relacionado
+      await tx.movimiento.deleteMany({ where: { compraId: id } });
+
+      // Eliminar compra
+      await tx.compra.delete({ where: { id } });
+    });
+
+    return NextResponse.json({
+      message: "Compra y datos asociados eliminados correctamente",
+    });
   } catch (error) {
     console.error("[DELETE_COMPRA_ERROR]", error);
     return NextResponse.json(
@@ -28,6 +56,7 @@ export async function DELETE(
   }
 }
 
+// ✅ PUT: Editar compra, actualizar stock, egreso y movimiento
 export async function PUT(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -41,97 +70,97 @@ export async function PUT(
       return NextResponse.json({ error: "Datos incompletos" }, { status: 400 });
     }
 
-    console.log("[PUT_COMPRA] Editando compra ID:", compraId);
-
-    const compraActualizada = await prisma.compra.update({
-      where: { id: compraId },
-      data: {
-        proveedorId: proveedorId ?? null,
-        fecha: new Date(fecha),
-        descripcion,
-        monto,
-      },
-    });
-
-    console.log("[PUT_COMPRA] Compra actualizada correctamente");
-
-    // Obtener productos anteriores
-    const productosAnteriores = await prisma.compraProducto.findMany({
-      where: { compraId },
-    });
-
-    // Crear mapa de productoId => cantidad (anterior)
-    const anteriorMap = new Map<string, number>();
-    productosAnteriores.forEach((p) =>
-      anteriorMap.set(p.productoId, p.cantidad)
-    );
-
-    // Crear mapa de productoId => cantidad (nuevo)
-    const nuevoMap = new Map<string, number>();
-    productos.forEach((p: any) => nuevoMap.set(p.productoId, p.cantidad));
-
-    // Obtener todos los productId únicos
-    const allProductoIds = Array.from(
-      new Set([...anteriorMap.keys(), ...nuevoMap.keys()])
-    );
-
-    // Calcular diferencias y actualizar stock
-    for (const productoId of allProductoIds) {
-      const anterior = anteriorMap.get(productoId) || 0;
-      const nuevo = nuevoMap.get(productoId) || 0;
-      const diferencia = nuevo - anterior;
-
-      if (diferencia !== 0) {
-        await prisma.producto.update({
-          where: { id: productoId },
-          data: {
-            cantidad: {
-              increment: diferencia,
-            },
-          },
-        });
-        console.log(
-          `[PUT_COMPRA] Stock actualizado para ${productoId}: ${
-            diferencia > 0 ? "+" : ""
-          }${diferencia}`
-        );
-      }
-    }
-
-    // Reemplazar los productos
-    await prisma.compraProducto.deleteMany({ where: { compraId } });
-    await prisma.compraProducto.createMany({
-      data: productos.map((p: any) => ({
-        compraId,
-        productoId: p.productoId,
-        cantidad: p.cantidad,
-        precioUnitario: p.precioUnitario,
-      })),
-    });
-
-    console.log("[PUT_COMPRA] Productos actualizados correctamente");
-
-    const egresoRelacionado = await prisma.egreso.findFirst({
-      where: {
-        userId,
-        compraId: compraId,
-      },
-    });
-
-    if (egresoRelacionado) {
-      await prisma.egreso.update({
-        where: { id: egresoRelacionado.id },
+    const compraActualizada = await prisma.$transaction(async (tx) => {
+      // Actualizar compra
+      const actualizada = await tx.compra.update({
+        where: { id: compraId },
         data: {
+          proveedorId: proveedorId ?? null,
           fecha: new Date(fecha),
+          descripcion,
           monto,
-          descripcion: `Actualizado desde compra ${compraId}`,
         },
       });
 
-      console.log("[PUT_COMPRA] Egreso relacionado actualizado");
-    } else {
-      console.warn("[PUT_COMPRA] No se encontró egreso relacionado");
-    }
+      // Obtener productos anteriores
+      const productosAnteriores = await tx.compraProducto.findMany({
+        where: { compraId },
+      });
+
+      const anteriorMap = new Map<string, number>();
+      productosAnteriores.forEach((p) =>
+        anteriorMap.set(p.productoId, p.cantidad)
+      );
+
+      const nuevoMap = new Map<string, number>();
+      productos.forEach((p: any) => nuevoMap.set(p.productoId, p.cantidad));
+
+      const allProductoIds = Array.from(
+        new Set([...anteriorMap.keys(), ...nuevoMap.keys()])
+      );
+
+      for (const productoId of allProductoIds) {
+        const anterior = anteriorMap.get(productoId) || 0;
+        const nuevo = nuevoMap.get(productoId) || 0;
+        const diferencia = nuevo - anterior;
+
+        if (diferencia !== 0) {
+          await tx.producto.update({
+            where: { id: productoId },
+            data: {
+              cantidad: {
+                increment: diferencia,
+              },
+            },
+          });
+        }
+      }
+
+      // Reemplazar productos de la compra
+      await tx.compraProducto.deleteMany({ where: { compraId } });
+      await tx.compraProducto.createMany({
+        data: productos.map((p: any) => ({
+          compraId,
+          productoId: p.productoId,
+          cantidad: p.cantidad,
+          precioUnitario: p.precioUnitario,
+        })),
+      });
+
+      // Actualizar egreso
+      const egresoRelacionado = await tx.egreso.findFirst({
+        where: { userId, compraId },
+      });
+
+      if (egresoRelacionado) {
+        await tx.egreso.update({
+          where: { id: egresoRelacionado.id },
+          data: {
+            fecha: new Date(fecha),
+            monto,
+            descripcion: descripcion ?? `Actualizado desde compra ${compraId}`,
+          },
+        });
+      }
+
+      // Actualizar movimiento
+      const movimientoRelacionado = await tx.movimiento.findFirst({
+        where: { userId, compraId },
+      });
+
+      if (movimientoRelacionado) {
+        await tx.movimiento.update({
+          where: { id: movimientoRelacionado.id },
+          data: {
+            fecha: new Date(fecha),
+            monto,
+            descripcion: descripcion ?? `Actualizado desde compra ${compraId}`,
+          },
+        });
+      }
+
+      return actualizada;
+    });
 
     return NextResponse.json(compraActualizada);
   } catch (error) {

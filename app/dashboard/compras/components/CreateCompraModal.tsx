@@ -36,6 +36,10 @@ import { useProveedores } from "@/lib/react-query/queries/proveedores/useProveed
 import { CompraProducto } from "@/types/compraProducto";
 import { ProductoParaCompra } from "@/types/compra";
 import { toast } from "sonner";
+import { ProveedorCombobox } from "@/app/api/proveedores/components/ProveedorCombobox";
+import { CreateProveedorModal } from "../../proveedores/components/CreateProveedorModal";
+import { CreateProductoModal } from "../../productos/components/CreateProductoModal";
+import { ProductoCombobox } from "../../productos/components/ProductoCombobox";
 
 export function CreateCompraModal({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
@@ -46,6 +50,10 @@ export function CreateCompraModal({ userId }: { userId: string }) {
 
   const { data: proveedores = [] } = useProveedores(userId);
   const { data: productosDisponibles = [] } = useProductos(userId);
+
+  const [showCreateProveedorModal, setShowCreateProveedorModal] =
+    useState(false);
+  const [showCreateProductoModal, setShowCreateProductoModal] = useState(false);
 
   const crearCompraMutation = useCrearCompra({ userId });
 
@@ -103,9 +111,9 @@ export function CreateCompraModal({ userId }: { userId: string }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>Nueva Compra</Button>
+        <Button>+ Nueva Compra</Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Registrar nueva compra</DialogTitle>
         </DialogHeader>
@@ -113,18 +121,12 @@ export function CreateCompraModal({ userId }: { userId: string }) {
         <div className="space-y-4">
           <div>
             <Label>Proveedor</Label>
-            <Select value={proveedorId} onValueChange={setProveedorId}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Seleccionar proveedor" />
-              </SelectTrigger>
-              <SelectContent>
-                {proveedores.map((prov) => (
-                  <SelectItem key={prov.id} value={prov.id}>
-                    {prov.nombre}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <ProveedorCombobox
+              value={proveedorId}
+              onChange={setProveedorId}
+              proveedores={proveedores}
+              onCrearNuevo={() => setShowCreateProveedorModal(true)}
+            />
           </div>
 
           <div>
@@ -156,63 +158,73 @@ export function CreateCompraModal({ userId }: { userId: string }) {
               onChange={(e) => setDescripcion(e.target.value)}
             />
           </div>
-
-          <div className="space-y-4">
+          <div className="space-y-1 col-span-full">
             <Label>Productos</Label>
             {productos.map((p, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Select
-                  value={p.productoId}
-                  onValueChange={(val) =>
-                    actualizarProducto(index, "productoId", val)
-                  }
-                >
-                  <SelectTrigger className="w-1/3">
-                    <SelectValue placeholder="Producto" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {productosDisponibles.map((prod) => (
-                      <SelectItem key={prod.id} value={prod.id}>
-                        {prod.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  type="number"
-                  placeholder="Cantidad"
-                  value={p.cantidad}
-                  onChange={(e) =>
-                    actualizarProducto(
-                      index,
-                      "cantidad",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="w-1/4"
-                />
-                <Input
-                  type="number"
-                  placeholder="Precio Unitario"
-                  value={p.precioUnitario}
-                  onChange={(e) =>
-                    actualizarProducto(
-                      index,
-                      "precioUnitario",
-                      parseFloat(e.target.value)
-                    )
-                  }
-                  className="w-1/4"
-                />
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => eliminarProducto(index)}
-                >
-                  ×
-                </Button>
+              <div
+                key={index}
+                className="grid grid-cols-1 md:grid-cols-5 gap-y-4 gap-1 items-end"
+              >
+                <div className="space-y-1 md:col-span-2 col-span-full">
+                  <Label>Producto</Label>
+                  <ProductoCombobox
+                    value={p.productoId}
+                    onChange={(val) =>
+                      actualizarProducto(index, "productoId", val)
+                    }
+                    productos={productosDisponibles}
+                    onCrearNuevo={() => setShowCreateProductoModal(true)}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Cantidad</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={p.cantidad}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      actualizarProducto(
+                        index,
+                        "cantidad",
+                        Number.isNaN(val) ? 0 : val
+                      );
+                    }}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Precio Unitario</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={p.precioUnitario}
+                    onChange={(e) => {
+                      const val = parseFloat(e.target.value);
+                      actualizarProducto(
+                        index,
+                        "precioUnitario",
+                        Number.isNaN(val) ? 0 : val
+                      );
+                    }}
+                  />
+                </div>
+
+                <div className="flex items-center justify-end">
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => eliminarProducto(index)}
+                    className=""
+                  >
+                    ×
+                  </Button>
+                </div>
               </div>
             ))}
+
             <Button variant="outline" onClick={agregarProducto}>
               + Agregar producto
             </Button>
@@ -222,7 +234,21 @@ export function CreateCompraModal({ userId }: { userId: string }) {
             Total: ${montoTotal.toFixed(2)}
           </div>
         </div>
+        {showCreateProveedorModal && (
+          <CreateProveedorModal
+            userId={userId}
+            open={showCreateProveedorModal}
+            onOpenChange={setShowCreateProveedorModal}
+          />
+        )}
 
+        {showCreateProductoModal && (
+          <CreateProductoModal
+            userId={userId}
+            open={showCreateProductoModal}
+            onOpenChange={setShowCreateProductoModal}
+          />
+        )}
         <DialogFooter>
           <Button onClick={handleSubmit}>Guardar</Button>
         </DialogFooter>

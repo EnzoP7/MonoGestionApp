@@ -35,7 +35,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   }
 }
 
-// ✅ POST: Crear compra
+// ✅ POST: Crear compra (con Egreso + Movimiento)
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     console.log("[POST_COMPRA] Monto total calculado:", montoTotal);
 
-    // ✅ Crear la compra primero
+    // ✅ Crear la compra
     const nuevaCompra = await prisma.compra.create({
       data: {
         user: { connect: { id: userId } },
@@ -84,19 +84,19 @@ export async function POST(req: NextRequest) {
 
     console.log("[POST_COMPRA] Compra creada:", nuevaCompra.id);
 
-    // ✅ Actualizar stock de cada producto comprado
+    // ✅ Actualizar stock
     for (const p of productos) {
       await prisma.producto.update({
         where: { id: p.productoId },
         data: {
           cantidad: {
-            increment: p.cantidad, // 👈 suma al stock actual
+            increment: p.cantidad,
           },
         },
       });
     }
 
-    // ✅ Crear el egreso con el campo `compraId` (tipo String)
+    // ✅ Crear egreso vinculado
     const nuevoEgreso = await prisma.egreso.create({
       data: {
         user: { connect: { id: userId } },
@@ -104,11 +104,25 @@ export async function POST(req: NextRequest) {
         monto: montoTotal,
         categoria: "Compra",
         descripcion,
-        compraId: nuevaCompra.id, // 👈 campo tipo String
+        compraId: nuevaCompra.id,
       },
     });
 
     console.log("[POST_COMPRA] Egreso creado:", nuevoEgreso.id);
+
+    // ✅ Crear movimiento vinculado a la compra
+    const nuevoMovimiento = await prisma.movimiento.create({
+      data: {
+        user: { connect: { id: userId } },
+        tipo: "Compra",
+        fecha: new Date(fecha),
+        monto: montoTotal,
+        descripcion: descripcion ?? `Compra registrada`,
+        compra: { connect: { id: nuevaCompra.id } },
+      },
+    });
+
+    console.log("[POST_COMPRA] Movimiento creado:", nuevoMovimiento.id);
 
     return NextResponse.json(nuevaCompra);
   } catch (error) {

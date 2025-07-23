@@ -14,8 +14,19 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useCrearProducto } from "@/lib/react-query/mutations/productos/useCrearProducto";
 
-export function CreateProductoModal({ userId }: { userId: string }) {
-  const [open, setOpen] = useState(false);
+interface Props {
+  userId: string;
+  open?: boolean;
+  onOpenChange?: (val: boolean) => void;
+}
+
+export function CreateProductoModal({ userId, open, onOpenChange }: Props) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = open !== undefined && onOpenChange !== undefined;
+
+  const actualOpen = isControlled ? open : internalOpen;
+  const setOpen = isControlled ? onOpenChange : setInternalOpen;
+
   const [form, setForm] = useState({
     nombre: "",
     descripcion: "",
@@ -52,10 +63,12 @@ export function CreateProductoModal({ userId }: { userId: string }) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button className="flex items-center gap-2">+ Crear producto</Button>
-      </DialogTrigger>
+    <Dialog open={actualOpen} onOpenChange={setOpen}>
+      {!isControlled && (
+        <DialogTrigger asChild>
+          <Button className="flex items-center gap-2">+ Crear producto</Button>
+        </DialogTrigger>
+      )}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Nuevo Producto</DialogTitle>

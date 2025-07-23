@@ -65,6 +65,8 @@ model Ingreso {
   categoriaIngresoId String?
   categoriaIngreso   CategoriaIngreso? @relation(fields: [categoriaIngresoId], references: [id])
   createdAt          DateTime          @default(now())
+
+  Movimiento Movimiento[]
 }
 
 model Egreso {
@@ -81,6 +83,8 @@ model Egreso {
   createdAt DateTime @default(now())
   compraId  String?
   Compra    Compra[]
+
+  Movimiento Movimiento[]
 }
 
 model Producto {
@@ -115,6 +119,8 @@ model Compra {
   egreso   Egreso? @relation(fields: [egresoId], references: [id])
 
   productos CompraProducto[]
+
+  Movimiento Movimiento[]
 }
 
 model CompraProducto {
@@ -158,6 +164,8 @@ model Venta {
   createdAt DateTime @default(now())
 
   VentaProducto VentaProducto[]
+
+  Movimiento Movimiento[]
 }
 
 model VentaProducto {
@@ -202,6 +210,19 @@ model Movimiento {
   fecha       DateTime
   monto       Float
   descripcion String?
+
+  // Relación directa a la fuente del movimiento
+  ingresoId String?
+  ingreso   Ingreso? @relation(fields: [ingresoId], references: [id])
+
+  egresoId String?
+  egreso   Egreso? @relation(fields: [egresoId], references: [id])
+
+  compraId String?
+  compra   Compra? @relation(fields: [compraId], references: [id])
+
+  ventaId String?
+  venta   Venta?  @relation(fields: [ventaId], references: [id])
 
   createdAt DateTime @default(now())
 }

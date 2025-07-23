@@ -96,7 +96,7 @@ export function ComprasTable({ userId }: { userId: string }) {
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex justify-center gap-2">
-          <Link href={`/compras/${row.original.id}`}>
+          <Link href={`/dashboard/compras/${row.original.id}`}>
             <Button variant="ghost" size="icon">
               <Eye className="h-4 w-4 text-primary" />
             </Button>
