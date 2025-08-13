@@ -35,6 +35,12 @@ import {
 import { CreateProveedorModal } from "./CreateProveedorModal";
 import { EditProveedorModal } from "./EditProveedorModal";
 import { useProveedores } from "@/lib/react-query/queries/proveedores/useProveedores";
+import { cn } from "@/lib/utils";
+
+// Definir interfaz personalizada para meta
+interface CustomColumnMeta {
+  className?: string;
+}
 
 export function ProveedoresTable({ userId }: { userId: string }) {
   const { data: proveedores = [], isLoading, error } = useProveedores(userId);
@@ -55,9 +61,24 @@ export function ProveedoresTable({ userId }: { userId: string }) {
 
   const columns: ColumnDef<Proveedor>[] = [
     { accessorKey: "nombre", header: "Nombre" },
-    { accessorKey: "telefono", header: "Teléfono" },
-    { accessorKey: "email", header: "Email" },
-    { accessorKey: "direccion", header: "Dirección" },
+    {
+      accessorKey: "telefono",
+      header: "Teléfono",
+      cell: ({ row }) => row.original.telefono,
+      meta: { className: "" } as CustomColumnMeta,
+    },
+    {
+      accessorKey: "email",
+      header: "Email",
+      cell: ({ row }) => row.original.email,
+      meta: { className: "hidden sm:table-cell" } as CustomColumnMeta,
+    },
+    {
+      accessorKey: "direccion",
+      header: "Dirección",
+      cell: ({ row }) => row.original.direccion,
+      meta: { className: "hidden sm:table-cell" } as CustomColumnMeta,
+    },
     {
       id: "acciones",
       header: "Acciones",
@@ -68,7 +89,6 @@ export function ProveedoresTable({ userId }: { userId: string }) {
               <Eye className="h-4 w-4 text-primary" />
             </Button>
           </Link>
-
           <Button
             variant="ghost"
             size="icon"
@@ -120,12 +140,19 @@ export function ProveedoresTable({ userId }: { userId: string }) {
       />
 
       <div className="overflow-x-auto rounded-md border">
-        <Table className="min-w-[600px]">
+        <Table className="min-w-[700px]">
           <TableHeader>
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id} className="text-center">
+                  <TableHead
+                    key={header.id}
+                    className={cn(
+                      "text-center",
+                      (header.column.columnDef.meta as CustomColumnMeta)
+                        ?.className
+                    )}
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -141,7 +168,14 @@ export function ProveedoresTable({ userId }: { userId: string }) {
             {table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-center">
+                  <TableCell
+                    key={cell.id}
+                    className={cn(
+                      "text-center",
+                      (cell.column.columnDef.meta as CustomColumnMeta)
+                        ?.className
+                    )}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

@@ -44,6 +44,11 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog";
 
+// Definir interfaz personalizada para meta
+interface CustomColumnMeta {
+  className?: string;
+}
+
 export function ProductosTable({ userId }: { userId: string }) {
   const { data: productos = [], isLoading, error } = useProductos(userId);
 
@@ -91,13 +96,24 @@ export function ProductosTable({ userId }: { userId: string }) {
   }, [productos, estadoFilter, filterField, filterText]);
 
   const columns: ColumnDef<Producto>[] = [
-    { accessorKey: "nombre", header: "Nombre" },
+    {
+      accessorKey: "nombre",
+      header: "Nombre",
+      meta: { className: "text-center" } as CustomColumnMeta,
+    },
     {
       accessorKey: "precio",
       header: "Precio",
       cell: ({ row }) => <div>${row.original.precio.toFixed(2)}</div>,
+      meta: {
+        className: "text-center hidden sm:table-cell",
+      } as CustomColumnMeta,
     },
-    { accessorKey: "cantidad", header: "Cantidad" },
+    {
+      accessorKey: "cantidad",
+      header: "Cantidad",
+      meta: { className: "text-center" } as CustomColumnMeta,
+    },
     {
       accessorKey: "activo",
       header: "Estado",
@@ -106,6 +122,9 @@ export function ProductosTable({ userId }: { userId: string }) {
           {row.original.activo ? "Activo" : "Inactivo"}
         </Badge>
       ),
+      meta: {
+        className: "text-center hidden sm:table-cell",
+      } as CustomColumnMeta,
     },
     {
       id: "acciones",
@@ -117,7 +136,6 @@ export function ProductosTable({ userId }: { userId: string }) {
               <Eye className="h-4 w-4 text-primary" />
             </Button>
           </Link>
-
           <Button
             variant="ghost"
             size="icon"
@@ -128,7 +146,6 @@ export function ProductosTable({ userId }: { userId: string }) {
           >
             <Pencil className="h-4 w-4 text-muted-foreground" />
           </Button>
-
           <Button
             variant="ghost"
             size="icon"
@@ -141,6 +158,7 @@ export function ProductosTable({ userId }: { userId: string }) {
           </Button>
         </div>
       ),
+      meta: { className: "text-center" } as CustomColumnMeta,
     },
   ];
 
@@ -157,14 +175,14 @@ export function ProductosTable({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-6 px-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <h2 className="text-2xl font-semibold">Productos</h2>
         <CreateProductoModal userId={userId} />
       </div>
 
-      <div className="flex flex-wrap gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Select onValueChange={setFilterField} value={filterField}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Campo" />
           </SelectTrigger>
           <SelectContent>
@@ -185,11 +203,11 @@ export function ProductosTable({ userId }: { userId: string }) {
           type={filterField === "nombre" ? "text" : "number"}
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
-          className="w-48"
+          className="w-full"
         />
 
         <Select onValueChange={setEstadoFilter} value={estadoFilter}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Filtrar por estado" />
           </SelectTrigger>
           <SelectContent>
@@ -206,7 +224,13 @@ export function ProductosTable({ userId }: { userId: string }) {
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id}>
                 {hg.headers.map((header) => (
-                  <TableHead key={header.id} className="text-center">
+                  <TableHead
+                    key={header.id}
+                    className={
+                      (header.column.columnDef.meta as CustomColumnMeta)
+                        ?.className || "text-center"
+                    }
+                  >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
@@ -222,7 +246,13 @@ export function ProductosTable({ userId }: { userId: string }) {
             {table.getRowModel().rows.map((row) => (
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-center">
+                  <TableCell
+                    key={cell.id}
+                    className={
+                      (cell.column.columnDef.meta as CustomColumnMeta)
+                        ?.className || "text-center"
+                    }
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
@@ -232,7 +262,7 @@ export function ProductosTable({ userId }: { userId: string }) {
         </Table>
       </div>
 
-      <div className="flex items-center justify-between py-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 py-2">
         <div className="text-sm text-muted-foreground">
           Página {table.getState().pagination.pageIndex + 1} de{" "}
           {table.getPageCount()}

@@ -10,6 +10,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { ArrowLeft, Calendar, Package, DollarSign, Truck } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   params: { id: string };
@@ -19,7 +20,8 @@ export default async function VerProductoPage({ params }: Props) {
   const producto = await prisma.producto.findUnique({
     where: { id: params.id },
     include: {
-      CompraProducto: {
+      compras: {
+        // Según tu esquema, la relación se llama "compras"
         orderBy: { createdAt: "desc" },
         take: 5,
         include: {
@@ -31,6 +33,7 @@ export default async function VerProductoPage({ params }: Props) {
         },
       },
       VentaProducto: {
+        // Según tu esquema, se llama "VentaProducto"
         orderBy: { createdAt: "desc" },
         take: 3,
         include: {
@@ -101,7 +104,7 @@ export default async function VerProductoPage({ params }: Props) {
         </CardContent>
       </Card>
 
-      {/* Últimas ventas del producto (simuladas) */}
+      {/* Últimas ventas del producto */}
       <section>
         <h2 className="text-xl font-semibold mb-4">Últimas ventas</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -144,8 +147,8 @@ export default async function VerProductoPage({ params }: Props) {
           Últimas compras al proveedor
         </h2>
         <Card className="p-4 space-y-4">
-          {producto.CompraProducto.length > 0 ? (
-            producto.CompraProducto.map((cp) => (
+          {producto.compras.length > 0 ? (
+            producto.compras.map((cp) => (
               <div
                 key={cp.id}
                 className="flex justify-between items-center bg-muted/10 p-4 rounded-md"
@@ -175,10 +178,10 @@ export default async function VerProductoPage({ params }: Props) {
       {/* Botón volver */}
       <div className="pt-4">
         <Button variant="outline" asChild>
-          <a href="/dashboard/productos" className="flex items-center gap-2">
+          <Link href="/dashboard/productos" className="flex items-center gap-2">
             <ArrowLeft className="w-4 h-4" />
             Volver al listado
-          </a>
+          </Link>
         </Button>
       </div>
     </div>

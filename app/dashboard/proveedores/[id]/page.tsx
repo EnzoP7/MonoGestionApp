@@ -10,6 +10,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { ArrowLeft, Calendar, Mail, MapPin, Phone } from "lucide-react";
+import Link from "next/link";
 
 interface Props {
   params: { id: string };
@@ -23,7 +24,8 @@ export default async function VerProveedorPage({ params }: Props) {
         orderBy: { createdAt: "desc" },
         take: 5,
         include: {
-          CompraProducto: {
+          productos: {
+            // Cambiado de CompraProducto a productos
             include: {
               producto: true,
             },
@@ -121,15 +123,19 @@ export default async function VerProveedorPage({ params }: Props) {
                 </div>
 
                 <ul className="text-sm list-disc pl-5">
-                  {compra.CompraProducto.map((cp) => (
-                    <li key={cp.id}>
-                      {cp.cantidad} x{" "}
-                      <span className="font-semibold">
-                        {cp.producto.nombre}
-                      </span>{" "}
-                      a ${cp.precioUnitario.toFixed(2)} c/u
-                    </li>
-                  ))}
+                  {compra.productos.map(
+                    (
+                      cp // Cambiado de CompraProducto a productos
+                    ) => (
+                      <li key={cp.id}>
+                        {cp.cantidad} x{" "}
+                        <span className="font-semibold">
+                          {cp.producto.nombre}
+                        </span>{" "}
+                        a ${cp.precioUnitario.toFixed(2)} c/u
+                      </li>
+                    )
+                  )}
                 </ul>
               </div>
             ))
@@ -144,10 +150,13 @@ export default async function VerProveedorPage({ params }: Props) {
       {/* Botón volver */}
       <div className="pt-4">
         <Button variant="outline" asChild>
-          <a href="/dashboard/proveedores" className="flex items-center gap-2">
+          <Link
+            href="/dashboard/proveedores"
+            className="flex items-center gap-2"
+          >
             <ArrowLeft className="w-4 h-4" />
             Volver al listado
-          </a>
+          </Link>
         </Button>
       </div>
     </div>
