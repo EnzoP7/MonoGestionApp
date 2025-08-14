@@ -34,18 +34,26 @@ const data = {
   secciones: {
     inicio: [
       { name: "Inicio", url: "/dashboard", icon: IconDashboard },
-      { name: "Finanzas", url: "/finanzas", icon: IconCurrencyDollar },
-      { name: "Movimientos", url: "/movimientos", icon: IconInnerShadowTop },
+      {
+        name: "Finanzas",
+        url: "/dashboard/finanzas",
+        icon: IconCurrencyDollar,
+      },
+      {
+        name: "Movimientos",
+        url: "/dashboard/movimientos",
+        icon: IconInnerShadowTop,
+      },
     ],
     ingresosEgresos: [
-      { name: "Ingresos", url: "/ingresos", icon: IconDatabase },
-      { name: "Egresos", url: "/egresos", icon: IconFileDescription },
-      { name: "Categorías", url: "/categorias", icon: IconFolder },
+      { name: "Ingresos", url: "/dashboard/ingresos", icon: IconDatabase },
+      { name: "Egresos", url: "/dashboard/egresos", icon: IconFileDescription },
+      { name: "Categorías", url: "/dashboard/categorias", icon: IconFolder },
     ],
     ventasClientes: [
-      { name: "Ventas", url: "/ventas", icon: IconListDetails },
-      { name: "Clientes", url: "/clientes", icon: IconUsers },
-      { name: "Servicios", url: "/servicios", icon: IconFileWord },
+      { name: "Ventas", url: "/dashboard/ventas", icon: IconListDetails },
+      { name: "Clientes", url: "/dashboard/clientes", icon: IconUsers },
+      { name: "Servicios", url: "/dashboard/servicios", icon: IconFileWord },
     ],
     inventarioProveedores: [
       { name: "Productos", url: "/dashboard/productos", icon: IconFolder },
@@ -53,7 +61,11 @@ const data = {
       { name: "Proveedores", url: "/dashboard/proveedores", icon: IconUsers },
     ],
     comunicacion: [
-      { name: "Notificaciones", url: "/notificaciones", icon: IconBell },
+      {
+        name: "Notificaciones",
+        url: "/dashboard/notificaciones",
+        icon: IconBell,
+      },
     ],
   },
 

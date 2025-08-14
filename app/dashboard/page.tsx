@@ -7,12 +7,14 @@ export default async function Page() {
   const userId = await getCurrentUserId();
 
   return (
-    <>
+    <div className="space-y-6 pb-8">
       <SectionCards userId={userId!} />
       <div className="px-4 lg:px-6">
         <ChartAreaInteractive userId={userId!} />
       </div>
-      <DataTable userId={userId!} />
-    </>
+      <div className="px-4 lg:px-6">
+        <DataTable userId={userId!} />
+      </div>
+    </div>
   );
 }
