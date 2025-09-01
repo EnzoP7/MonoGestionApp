@@ -1,6 +1,4 @@
 import { getCurrentUserId } from "@/lib/server/getCurrentUserId";
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
 import { ProveedoresTable } from "./components/proveedoresTable";
 
 export default async function ProveedoresPage() {
