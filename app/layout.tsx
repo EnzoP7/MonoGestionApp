@@ -11,9 +11,10 @@ import { Toaster } from "@/components/ui/sonner";
 import ProvidersReactQuery from "./providers/providers";
 
 export const metadata: Metadata = {
-  title: "Orcish Dashboard",
+  title: "MonoGestión - Sistema de Gestión para Monotributistas",
   description:
-    "A fully responsive analytics dashboard featuring dynamic charts, interactive tables, a collapsible sidebar, and a light/dark mode theme switcher. Built with modern web technologies, it ensures seamless performance across devices, offering an intuitive user interface for data visualization and exploration.",
+    "Sistema completo de gestión financiera y administrativa para monotributistas. Incluye control de ingresos, egresos, inventario, clientes, proveedores y reportes con notificaciones push.",
+  manifest: "/manifest.json",
 };
 
 export default async function RootLayout({
@@ -26,7 +27,27 @@ export default async function RootLayout({
   const isScaled = activeThemeValue?.endsWith("-scaled");
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/icon-192x192.png" sizes="192x192" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="theme-color" content="#000000" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js').then(function(registration) {
+                    console.log('SW registered: ', registration);
+                  }, function(registrationError) {
+                    console.log('SW registration failed: ', registrationError);
+                  });
+                });
+              }
+            `,
+          }}
+        />
+      </head>
       <body
         className={cn(
           "bg-background overscroll-none font-sans antialiased",

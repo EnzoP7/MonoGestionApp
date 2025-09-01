@@ -1,13 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarIcon, TrendingUp, DollarSign, Package, Users, ShoppingCart, FileText, BarChart3, PieChart, LineChart, ArrowUpRight, ArrowDownRight, UserPlus } from "lucide-react";
+import { CalendarIcon, TrendingUp, DollarSign, Package, Users, ShoppingCart, FileText, BarChart3, PieChart, LineChart, ArrowUpRight, ArrowDownRight, UserPlus, FileSpreadsheet, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { toast } from "sonner";
 
 interface ReportOption {
   id: string;
@@ -131,6 +139,8 @@ export default function ReportesPage() {
     to: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).toISOString().split('T')[0]
   });
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [formatoReporte, setFormatoReporte] = useState<'pdf' | 'excel'>('pdf');
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const toggleReport = (reportId: string) => {
     setSelectedReports(prev => 
@@ -144,9 +154,177 @@ export default function ReportesPage() {
     ? reportOptions.filter(report => report.category === selectedCategory)
     : reportOptions;
 
-  const generateReports = () => {
-    // Funcionalidad será implementada después
-    console.log("Generando reportes:", { selectedReports, dateRange });
+  const generateReports = async () => {
+    if (selectedReports.length === 0) {
+      toast.error("Selecciona al menos un reporte para generar");
+      return;
+    }
+
+    setIsGenerating(true);
+    
+    try {
+      if (selectedReports.includes('ingresos-egresos')) {
+        // Generar reporte de Ingresos vs Egresos
+        await generateIngresosEgresosReport(formatoReporte);
+      }
+      
+      if (selectedReports.includes('compras-proveedores')) {
+        // Generar reporte de Compras y Proveedores
+        await generateComprasProveedoresReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('ventas-mes')) {
+        await generateVentasMesReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('stock-productos')) {
+        await generateStockProductosReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('productos-top')) {
+        await generateProductosTopReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('clientes-ventas')) {
+        await generateClientesVentasReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('clientes-nuevos')) {
+        await generateClientesNuevosReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('movimientos-general')) {
+        await generateMovimientosGeneralReport(formatoReporte);
+      }
+
+      if (selectedReports.includes('tendencias-mes')) {
+        await generateTendenciasMesReport(formatoReporte);
+      }
+      
+      toast.success("Reportes generados exitosamente");
+    } catch (error) {
+      toast.error("Error al generar los reportes");
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateIngresosEgresosReport = async (formato: 'pdf' | 'excel') => {
+    try {
+      const response = await fetch('/api/reportes/ingresos-egresos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fechaInicio: dateRange.from,
+          fechaFin: dateRange.to,
+          formato
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al generar el reporte');
+      }
+
+      // Obtener el blob del archivo
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear nombre de archivo
+      const extension = formato === 'pdf' ? 'pdf' : 'xlsx';
+      const filename = `reporte-ingresos-egresos-${dateRange.from}-${dateRange.to}.${extension}`;
+
+      // Crear link de descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error generando reporte:', error);
+      throw error;
+    }
+  };
+
+  const generateComprasProveedoresReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/compras-proveedores', 'compras-proveedores', formato);
+  };
+
+  const generateVentasMesReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/ventas-mes', 'ventas', formato);
+  };
+
+  const generateStockProductosReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/stock-productos', 'inventario', formato);
+  };
+
+  const generateProductosTopReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/productos-top', 'top-productos', formato);
+  };
+
+  const generateClientesVentasReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/clientes-ventas', 'analisis-clientes', formato);
+  };
+
+  const generateClientesNuevosReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/clientes-nuevos', 'nuevos-clientes', formato);
+  };
+
+  const generateMovimientosGeneralReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/movimientos-general', 'movimientos-general', formato);
+  };
+
+  const generateTendenciasMesReport = async (formato: 'pdf' | 'excel') => {
+    await generateReport('/api/reportes/tendencias-mes', 'tendencias', formato);
+  };
+
+  const generateReport = async (endpoint: string, reportName: string, formato: 'pdf' | 'excel') => {
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fechaInicio: dateRange.from,
+          fechaFin: dateRange.to,
+          formato
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al generar el reporte');
+      }
+
+      // Obtener el blob del archivo
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      
+      // Crear nombre de archivo
+      const extension = formato === 'pdf' ? 'pdf' : 'xlsx';
+      const filename = `${reportName}-${dateRange.from}-${dateRange.to}.${extension}`;
+
+      // Crear link de descarga
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(`Error generando reporte ${reportName}:`, error);
+      throw error;
+    }
   };
 
   return (
@@ -360,14 +538,66 @@ export default function ReportesPage() {
             
             <Separator className="mb-4" />
             
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                Período: <span className="font-medium">{dateRange.from}</span> al{' '}
-                <span className="font-medium">{dateRange.to}</span>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+              <div className="space-y-2">
+                <Label>Período del Reporte</Label>
+                <div className="text-sm text-muted-foreground p-2 bg-muted rounded">
+                  {dateRange.from} al {dateRange.to}
+                </div>
               </div>
-              <Button onClick={generateReports} className="gap-2">
-                <TrendingUp className="h-4 w-4" />
-                Generar Reportes
+              
+              {(selectedReports.includes('ingresos-egresos') || 
+                selectedReports.includes('compras-proveedores') ||
+                selectedReports.includes('ventas-mes') ||
+                selectedReports.includes('stock-productos') ||
+                selectedReports.includes('productos-top') ||
+                selectedReports.includes('clientes-ventas') ||
+                selectedReports.includes('clientes-nuevos') ||
+                selectedReports.includes('movimientos-general') ||
+                selectedReports.includes('tendencias-mes')) && (
+                <div className="space-y-2">
+                  <Label>Formato de Exportación</Label>
+                  <Select value={formatoReporte} onValueChange={(value: 'pdf' | 'excel') => setFormatoReporte(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pdf">
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-red-600" />
+                          <span>PDF - Reporte Visual</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="excel">
+                        <div className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                          <span>Excel - Datos para Análisis</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end">
+              <Button 
+                onClick={generateReports} 
+                disabled={isGenerating}
+                className="gap-2"
+                size="lg"
+              >
+                {isGenerating ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                    Generando...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Generar Reportes
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>

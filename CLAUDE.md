@@ -27,6 +27,16 @@ npx prisma migrate dev  # Create and apply new migration
 npx prisma studio    # Open Prisma Studio for database inspection
 ```
 
+## Push Notifications Commands
+
+```bash
+# Generate VAPID keys for production
+npx web-push generate-vapid-keys  # Generate new VAPID key pair
+
+# Install push notifications dependencies
+npm install web-push  # Web push library for server-side notifications
+```
+
 ## Project Architecture
 
 This is a **Next.js 15** application with **App Router** for a "monotributista" (Argentine tax regime) management system.
@@ -39,6 +49,9 @@ This is a **Next.js 15** application with **App Router** for a "monotributista" 
 - **Authentication**: JWT tokens stored in cookies
 - **Forms**: React Hook Form with Zod validation
 - **Drag & Drop**: dnd-kit for sortable interfaces
+- **Push Notifications**: Web Push API with VAPID, Service Worker
+- **PWA**: Progressive Web App with offline capabilities
+- **Reports**: jsPDF and XLSX for document generation
 
 ### Key Architecture Patterns
 
@@ -67,6 +80,7 @@ The application manages:
 - **Purchases**: Compras linked to Proveedores with CompraProducto junction table
 - **Sales**: Ventas with VentaProducto for product sales and VentaServicio for services
 - **Movement tracking**: Movimiento table that links to all transaction types
+- **Push notifications**: PushSubscription, NotificationPreferences, NotificationHistory
 - **User isolation**: All entities are user-scoped via userId foreign keys
 
 ### File Organization
@@ -74,6 +88,8 @@ The application manages:
 ```
 app/
 ├── api/              # Next.js API routes
+│   ├── reportes/     # Report generation endpoints (PDF/Excel)
+│   └── notifications/ # Push notification system
 ├── dashboard/        # Protected dashboard pages
 │   ├── layout.tsx    # Dashboard-specific layout with auth
 │   ├── categorias/   # Category management
@@ -83,19 +99,27 @@ app/
 │   ├── ingresos/     # Income management
 │   ├── egresos/      # Expense management
 │   ├── finanzas/     # Financial dashboard
-│   └── movimientos/  # Transaction movements tracking
+│   ├── movimientos/  # Transaction movements tracking
+│   ├── ventas/nueva/ # Dedicated sales creation page
+│   ├── reportes/     # Report generation interface
+│   └── configuracion/notificaciones/ # Push notification settings
 ├── login/           # Authentication page
-└── layout.tsx       # Root layout with providers
+└── layout.tsx       # Root layout with providers and PWA setup
 
 lib/
 ├── react-query/     # TanStack Query setup
 ├── server/          # Server-side utilities
-└── validators/      # Zod validation schemas
+├── validators/      # Zod validation schemas
+└── notifications/   # Push notification system
 
 components/
 ├── ui/              # ShadCN UI components
 ├── layout/          # Layout components
 └── [entity]/        # Entity-specific components
+
+public/
+├── sw.js            # Service Worker for push notifications
+└── manifest.json    # PWA manifest
 ```
 
 ### Environment Setup
@@ -103,6 +127,12 @@ components/
 Required environment variables:
 - `DATABASE_URL`: PostgreSQL connection string for Prisma
 - `JWT_SECRET`: Secret key for JWT token signing (authentication)
+- `NEXT_PUBLIC_APP_URL`: Application URL for push notifications (e.g., "http://localhost:3000")
+- `VAPID_PUBLIC_KEY`: VAPID public key for web push notifications
+- `VAPID_PRIVATE_KEY`: VAPID private key for web push notifications  
+- `VAPID_SUBJECT`: Contact email for VAPID (e.g., "mailto:admin@monogestion.com")
+
+See `.env.example` for reference values including pre-generated VAPID keys for development.
 
 ### Development Workflow
 
@@ -135,3 +165,17 @@ Required environment variables:
 - Multi-theme support with theme cookies and CSS custom properties
 - Responsive design using container queries (`@container/main`)
 - Form validation with React Hook Form + Zod schemas
+
+**Push Notifications System:**
+- Service Worker (`/public/sw.js`) handles 12+ notification types with custom icons
+- VAPID protocol for web push with automated business triggers
+- User preferences management via `/dashboard/configuracion/notificaciones`
+- Automated triggers: stock alerts, sales milestones, expense limits, customer events
+- API endpoints: `/api/notifications/{send,subscribe,unsubscribe,preferences,test}`
+- Database models: PushSubscription, NotificationPreferences, NotificationHistory
+
+**Report Generation System:**
+- 9 comprehensive business reports with PDF and Excel export
+- API endpoints under `/api/reportes/` for each report type
+- Uses jsPDF and XLSX libraries for document generation
+- Available reports: income/expenses, purchases/suppliers, sales analysis, inventory, customer analytics

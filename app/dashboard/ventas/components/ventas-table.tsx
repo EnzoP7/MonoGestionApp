@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import Link from "next/link";
 import { VentaWithDetails } from "@/types/venta";
 import {
   ColumnDef,
@@ -25,17 +24,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { 
-  Plus, 
-  Eye, 
-  Trash2, 
-  Package, 
-  Briefcase, 
+import {
+  Plus,
+  Eye,
+  Trash2,
+  Package,
+  Briefcase,
   User,
   Calendar,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
-import { CreateVentaModal } from "./CreateVentaModal";
+import Link from "next/link";
 import { useVentas } from "@/lib/react-query/queries/ventas/useVentas";
 import { useEliminarVenta } from "@/lib/react-query/mutations/ventas/useEliminarVenta";
 import {
@@ -66,11 +65,15 @@ const getTipoIcon = (tipo: string) => {
     case "servicio":
       return <Briefcase className="h-4 w-4" />;
     default:
-      return <div className="h-4 w-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded" />;
+      return (
+        <div className="h-4 w-4 bg-gradient-to-r from-blue-500 to-purple-500 rounded" />
+      );
   }
 };
 
-const getTipoBadgeVariant = (tipo: string): "default" | "secondary" | "outline" => {
+const getTipoBadgeVariant = (
+  tipo: string
+): "default" | "secondary" | "outline" => {
   switch (tipo) {
     case "producto":
       return "default";
@@ -86,7 +89,9 @@ export function VentasTable() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [ventaToDelete, setVentaToDelete] = useState<VentaWithDetails | null>(null);
+  const [ventaToDelete, setVentaToDelete] = useState<VentaWithDetails | null>(
+    null
+  );
 
   const { data: ventas = [], isLoading } = useVentas();
   const eliminarVentaMutation = useEliminarVenta();
@@ -189,11 +194,7 @@ export function VentasTable() {
         header: "Acciones",
         cell: ({ row }) => (
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              asChild
-            >
+            <Button variant="ghost" size="sm" asChild>
               <Link href={`/dashboard/ventas/${row.original.id}`}>
                 <Eye className="h-4 w-4" />
               </Link>
@@ -242,7 +243,7 @@ export function VentasTable() {
 
   const handleDelete = async () => {
     if (!ventaToDelete) return;
-    
+
     await eliminarVentaMutation.mutateAsync(ventaToDelete.id);
     setIsDeleteDialogOpen(false);
     setVentaToDelete(null);
@@ -265,7 +266,12 @@ export function VentasTable() {
           onChange={(event) => setGlobalFilter(String(event.target.value))}
           className="max-w-sm"
         />
-        <CreateVentaModal />
+        <Button asChild>
+          <Link href="/dashboard/ventas/nueva">
+            <Plus className="mr-2 h-4 w-4" />
+            Nueva Venta
+          </Link>
+        </Button>
       </div>
 
       <div className="rounded-md border">
@@ -274,7 +280,7 @@ export function VentasTable() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead 
+                  <TableHead
                     key={header.id}
                     className={header.column.columnDef.meta?.className}
                   >
@@ -297,7 +303,7 @@ export function VentasTable() {
                   data-state={row.getIsSelected() && "selected"}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell 
+                    <TableCell
                       key={cell.id}
                       className={cell.column.columnDef.meta?.className}
                     >
@@ -391,16 +397,23 @@ export function VentasTable() {
       </div>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. Se eliminará permanentemente la venta
+              Esta acción no se puede deshacer. Se eliminará permanentemente la
+              venta
               {ventaToDelete?.cliente?.nombre && (
-                <> de <strong>{ventaToDelete.cliente.nombre}</strong></>
-              )}
-              {" "}de la base de datos.
+                <>
+                  {" "}
+                  de <strong>{ventaToDelete.cliente.nombre}</strong>
+                </>
+              )}{" "}
+              de la base de datos.
               <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-blue-800">
                 ℹ️ El stock de los productos será restaurado automáticamente.
               </div>
