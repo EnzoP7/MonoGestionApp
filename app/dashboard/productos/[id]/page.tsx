@@ -9,7 +9,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { ArrowLeft, Calendar, Package, DollarSign, Truck } from "lucide-react";
+import { ArrowLeft, Calendar, Package, DollarSign, Truck, TrendingUp, TrendingDown, BarChart3, Edit } from "lucide-react";
 import Link from "next/link";
 
 interface Props {
@@ -49,6 +49,12 @@ export default async function VerProductoPage({ params }: Props) {
 
   if (!producto) return notFound();
 
+  // Calcular estadísticas
+  const totalVentas = producto.VentaProducto.reduce((sum, vp) => sum + (vp.precio * vp.cantidad), 0);
+  const totalCompras = producto.compras.reduce((sum, cp) => sum + (cp.precioUnitario * cp.cantidad), 0);
+  const unidadesVendidas = producto.VentaProducto.reduce((sum, vp) => sum + vp.cantidad, 0);
+  const unidadesCompradas = producto.compras.reduce((sum, cp) => sum + cp.cantidad, 0);
+
   return (
     <div className="w-full min-h-screen bg-background p-6 space-y-6">
       {/* Detalle del producto */}
@@ -58,9 +64,17 @@ export default async function VerProductoPage({ params }: Props) {
             <CardTitle className="text-3xl font-bold">
               {producto.nombre}
             </CardTitle>
-            <Badge variant={producto.activo ? "default" : "destructive"}>
-              {producto.activo ? "Activo" : "Inactivo"}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant={producto.activo ? "default" : "destructive"}>
+                {producto.activo ? "Activo" : "Inactivo"}
+              </Badge>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/dashboard/productos?edit=${producto.id}`} className="flex items-center gap-1">
+                  <Edit className="w-3 h-3" />
+                  Editar
+                </Link>
+              </Button>
+            </div>
           </div>
           {producto.descripcion && (
             <CardDescription className="text-muted-foreground text-base">
@@ -69,11 +83,11 @@ export default async function VerProductoPage({ params }: Props) {
           )}
         </CardHeader>
 
-        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4">
+        <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 mt-4">
           <div className="flex items-center gap-3">
             <DollarSign className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Precio</p>
+              <p className="text-sm text-muted-foreground">Precio Unitario</p>
               <p className="text-lg font-semibold">
                 ${producto.precio.toFixed(2)}
               </p>
@@ -83,8 +97,28 @@ export default async function VerProductoPage({ params }: Props) {
           <div className="flex items-center gap-3">
             <Package className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-sm text-muted-foreground">Cantidad</p>
+              <p className="text-sm text-muted-foreground">Stock Actual</p>
               <p className="text-lg font-semibold">{producto.cantidad}</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <TrendingUp className="w-5 h-5 text-green-600" />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Ventas</p>
+              <p className="text-lg font-semibold text-green-600">
+                ${totalVentas.toFixed(2)}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <TrendingDown className="w-5 h-5 text-blue-600" />
+            <div>
+              <p className="text-sm text-muted-foreground">Total Compras</p>
+              <p className="text-lg font-semibold text-blue-600">
+                ${totalCompras.toFixed(2)}
+              </p>
             </div>
           </div>
 
@@ -103,6 +137,61 @@ export default async function VerProductoPage({ params }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Estadísticas Adicionales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unidades Vendidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-green-600" />
+              <span className="text-2xl font-bold text-green-600">{unidadesVendidas}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Unidades Compradas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Truck className="w-4 h-4 text-blue-600" />
+              <span className="text-2xl font-bold text-blue-600">{unidadesCompradas}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Rotación de Stock</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-orange-600" />
+              <span className="text-2xl font-bold text-orange-600">
+                {unidadesCompradas > 0 ? ((unidadesVendidas / unidadesCompradas) * 100).toFixed(1) : 0}%
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Margen Bruto</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-purple-600" />
+              <span className="text-2xl font-bold text-purple-600">
+                ${totalCompras > 0 ? (totalVentas - totalCompras).toFixed(2) : totalVentas.toFixed(2)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Últimas ventas del producto */}
       <section>

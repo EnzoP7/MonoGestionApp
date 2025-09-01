@@ -307,7 +307,11 @@ export function EgresosTable({ userId }: { userId: string }) {
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
+                <TableRow 
+                  key={row.id}
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => window.location.href = `/dashboard/egresos/${row.original.id}`}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}
@@ -315,6 +319,11 @@ export function EgresosTable({ userId }: { userId: string }) {
                         (cell.column.columnDef.meta as CustomColumnMeta)
                           ?.className || "text-center"
                       }
+                      onClick={(e) => {
+                        if (cell.column.id === 'acciones') {
+                          e.stopPropagation();
+                        }
+                      }}
                     >
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>

@@ -27,7 +27,7 @@ import {
   SelectValue,
   SelectContent,
 } from "@/components/ui/select";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -96,12 +96,6 @@ export function ComprasTable({ userId }: { userId: string }) {
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex justify-center gap-2">
-          <Link href={`/dashboard/compras/${row.original.id}`}>
-            <Button variant="ghost" size="icon">
-              <Eye className="h-4 w-4 text-primary" />
-            </Button>
-          </Link>
-
           <Button
             variant="ghost"
             size="icon"
@@ -188,9 +182,21 @@ export function ComprasTable({ userId }: { userId: string }) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow 
+                key={row.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => window.location.href = `/dashboard/compras/${row.original.id}`}
+              >
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id} className="text-center">
+                  <TableCell 
+                    key={cell.id} 
+                    className="text-center"
+                    onClick={(e) => {
+                      if (cell.column.id === 'acciones') {
+                        e.stopPropagation();
+                      }
+                    }}
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}

@@ -73,7 +73,7 @@ const data = {
     mensuales: [
       {
         name: "Reportes Mensuales",
-        url: "/reportes/mensuales",
+        url: "/dashboard/reportes",
         icon: IconReport,
       },
     ],

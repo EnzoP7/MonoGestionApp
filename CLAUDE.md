@@ -12,6 +12,9 @@ npm run dev          # Start Next.js development server on http://localhost:3000
 npm run build        # Build application for production
 npm run start        # Start production server
 npm run lint         # Run ESLint checks
+
+# Type checking
+npx tsc --noEmit     # Run TypeScript type checking without emitting files
 ```
 
 ## Database Commands
@@ -76,7 +79,11 @@ app/
 │   ├── categorias/   # Category management
 │   ├── productos/    # Product management  
 │   ├── proveedores/  # Supplier management
-│   └── compras/      # Purchase management
+│   ├── compras/      # Purchase management
+│   ├── ingresos/     # Income management
+│   ├── egresos/      # Expense management
+│   ├── finanzas/     # Financial dashboard
+│   └── movimientos/  # Transaction movements tracking
 ├── login/           # Authentication page
 └── layout.tsx       # Root layout with providers
 
@@ -95,10 +102,36 @@ components/
 
 Required environment variables:
 - `DATABASE_URL`: PostgreSQL connection string for Prisma
+- `JWT_SECRET`: Secret key for JWT token signing (authentication)
 
 ### Development Workflow
 
 1. Database changes: Update `prisma/schema.prisma`, then run `npx prisma db push`
 2. New features: Follow the existing pattern of API routes + React Query hooks + UI components
-3. Authentication: Protected routes automatically redirect via middleware
+3. Authentication: Protected routes automatically redirect via middleware at `middleware.ts:22`
 4. Styling: Uses Tailwind CSS v4 with CSS variables for theming
+
+### Key Implementation Details
+
+**Authentication System:**
+- JWT tokens stored in HTTP-only cookies named "token"
+- Middleware validates JWT format (3 dot-separated parts) at `middleware.ts:13`
+- Server utilities: `getCurrentUserId()` and `getUserById()` for user validation
+- Dashboard layout enforces authentication at `app/dashboard/layout.tsx:10-11`
+
+**React Query Configuration:**
+- Default 5-minute stale time prevents unnecessary refetches (`lib/react-query/options.ts:5`)
+- Window focus refetching disabled for better UX
+- Organized mutations and queries by business entity (productos, proveedores, compras, etc.)
+
+**Database Relationships:**
+- All entities are user-scoped via `userId` foreign keys for multi-tenant isolation
+- Junction tables: `CompraProducto` (purchases ↔ products), `VentaProducto`/`VentaServicio` (sales)
+- `Movimiento` table serves as unified transaction log linking all financial operations
+- Categories: separate `CategoriaIngreso` and `CategoriaEgreso` for income/expense classification
+
+**UI Framework:**
+- ShadCN components with Radix UI primitives
+- Multi-theme support with theme cookies and CSS custom properties
+- Responsive design using container queries (`@container/main`)
+- Form validation with React Hook Form + Zod schemas

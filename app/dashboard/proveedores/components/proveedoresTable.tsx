@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { useEliminarProveedor } from "@/lib/react-query/mutations/proveedores/useEliminarProveedor";
 import {
   AlertDialog,
@@ -84,11 +84,6 @@ export function ProveedoresTable({ userId }: { userId: string }) {
       header: "Acciones",
       cell: ({ row }) => (
         <div className="flex justify-center gap-2">
-          <Link href={`/dashboard/proveedores/${row.original.id}?view=1`}>
-            <Button variant="ghost" size="icon">
-              <Eye className="h-4 w-4 text-primary" />
-            </Button>
-          </Link>
           <Button
             variant="ghost"
             size="icon"
@@ -166,7 +161,11 @@ export function ProveedoresTable({ userId }: { userId: string }) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow 
+                key={row.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => window.location.href = `/dashboard/proveedores/${row.original.id}?view=1`}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
@@ -175,6 +174,11 @@ export function ProveedoresTable({ userId }: { userId: string }) {
                       (cell.column.columnDef.meta as CustomColumnMeta)
                         ?.className
                     )}
+                    onClick={(e) => {
+                      if (cell.column.id === 'acciones') {
+                        e.stopPropagation();
+                      }
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>

@@ -433,7 +433,11 @@ export function MovimientosTable({ userId }: { userId: string }) {
           <TableBody>
             {table.getRowModel().rows.length > 0 ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} className="hover:bg-muted/50">
+                <TableRow 
+                  key={row.id} 
+                  className="cursor-pointer hover:bg-muted/50"
+                  onClick={() => window.location.href = `/dashboard/movimientos/${row.original.id}`}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
                       key={cell.id}

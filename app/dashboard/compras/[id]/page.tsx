@@ -9,6 +9,10 @@ import {
   PackageCheck,
   DollarSign,
   User,
+  Package,
+  Calculator,
+  TrendingUp,
+  Edit,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -34,6 +38,11 @@ export default async function VerCompraPage({ params }: PageProps) {
   if (!compra) return notFound();
 
   const fechaFormateada = format(new Date(compra.fecha), "dd/MM/yyyy");
+  
+  // Calcular estadísticas
+  const totalProductos = compra.productos.length;
+  const totalUnidades = compra.productos.reduce((sum, p) => sum + p.cantidad, 0);
+  const precioPromedio = totalUnidades > 0 ? compra.monto / totalUnidades : 0;
 
   return (
     <div className="w-full max-w-5xl mx-auto p-6 space-y-6">
@@ -50,10 +59,18 @@ export default async function VerCompraPage({ params }: PageProps) {
       {/* Información general de la compra */}
       <Card className="shadow-xl border border-muted p-6">
         <CardHeader className="pb-4">
-          <CardTitle className="text-3xl font-bold flex items-center gap-2">
-            <PackageCheck size={24} className="text-primary" />
-            Compra #{compra.id.slice(0, 6)}
-          </CardTitle>
+          <div className="flex items-center justify-between w-full">
+            <CardTitle className="text-3xl font-bold flex items-center gap-2">
+              <PackageCheck size={24} className="text-primary" />
+              Compra #{compra.id.slice(0, 6)}
+            </CardTitle>
+            <Link href={`/dashboard/compras?edit=${compra.id}`}>
+              <Badge variant="outline" className="flex items-center gap-1 cursor-pointer hover:bg-muted">
+                <Edit className="w-3 h-3" />
+                Editar
+              </Badge>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
@@ -85,6 +102,61 @@ export default async function VerCompraPage({ params }: PageProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Estadísticas de la Compra */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Productos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4 text-blue-600" />
+              <span className="text-2xl font-bold text-blue-600">{totalProductos}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total de Unidades</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <Calculator className="w-4 h-4 text-green-600" />
+              <span className="text-2xl font-bold text-green-600">{totalUnidades}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Precio Promedio</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-purple-600" />
+              <span className="text-2xl font-bold text-purple-600">
+                ${precioPromedio.toFixed(2)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">Monto Total</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2">
+              <DollarSign className="w-4 h-4 text-orange-600" />
+              <span className="text-2xl font-bold text-orange-600">
+                ${compra.monto.toFixed(2)}
+              </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Lista de productos */}
       <Card className="shadow-lg border border-muted p-6">

@@ -252,7 +252,11 @@ export function CategoriasTable({ userId }: { userId: string }) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow 
+                key={row.id}
+                className="cursor-pointer hover:bg-muted/50"
+                onClick={() => window.location.href = `/dashboard/categorias/${row.original.id}`}
+              >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell
                     key={cell.id}
@@ -260,6 +264,11 @@ export function CategoriasTable({ userId }: { userId: string }) {
                       (cell.column.columnDef.meta as CustomColumnMeta)
                         ?.className || "text-center"
                     }
+                    onClick={(e) => {
+                      if (cell.column.id === 'acciones') {
+                        e.stopPropagation();
+                      }
+                    }}
                   >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
