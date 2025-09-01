@@ -26,8 +26,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  TrendingUp, 
+import {
+  TrendingUp,
   TrendingDown,
   ShoppingCart,
   Store,
@@ -37,36 +37,47 @@ import {
   AlertTriangle,
   RefreshCw,
   ArrowRight,
-  Activity
+  Activity,
 } from "lucide-react";
 import { Movimiento } from "@/types/movimiento";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 // --- HELPER FUNCTIONS ---
 const getTypeIcon = (tipo: string, theme?: string) => {
   const isDark = theme === "dark";
-  
+
   switch (tipo) {
     case "Ingreso":
-      return <TrendingUp className={cn(
-        "w-4 h-4",
-        isDark ? "text-emerald-400" : "text-emerald-600"
-      )} />;
+      return (
+        <TrendingUp
+          className={cn(
+            "w-4 h-4",
+            isDark ? "text-emerald-400" : "text-emerald-600"
+          )}
+        />
+      );
     case "Egreso":
-      return <TrendingDown className={cn(
-        "w-4 h-4",
-        isDark ? "text-red-400" : "text-red-600"
-      )} />;
+      return (
+        <TrendingDown
+          className={cn("w-4 h-4", isDark ? "text-red-400" : "text-red-600")}
+        />
+      );
     case "Venta":
-      return <Store className={cn(
-        "w-4 h-4",
-        isDark ? "text-blue-400" : "text-blue-600"
-      )} />;
+      return (
+        <Store
+          className={cn("w-4 h-4", isDark ? "text-blue-400" : "text-blue-600")}
+        />
+      );
     case "Compra":
-      return <ShoppingCart className={cn(
-        "w-4 h-4",
-        isDark ? "text-orange-400" : "text-orange-600"
-      )} />;
+      return (
+        <ShoppingCart
+          className={cn(
+            "w-4 h-4",
+            isDark ? "text-orange-400" : "text-orange-600"
+          )}
+        />
+      );
     default:
       return <Activity className="w-4 h-4 text-muted-foreground" />;
   }
@@ -77,11 +88,17 @@ const getSourceInfo = (movimiento: Movimiento) => {
     case "Ingreso":
       return movimiento.ingreso?.categoriaIngreso?.nombre || "Sin categoría";
     case "Egreso":
-      return movimiento.egreso?.categoriaEgreso?.nombre || movimiento.egreso?.categoria || "Sin categoría";
+      return (
+        movimiento.egreso?.categoriaEgreso?.nombre ||
+        movimiento.egreso?.categoria ||
+        "Sin categoría"
+      );
     case "Venta":
       return movimiento.venta?.cliente?.nombre || "Cliente no especificado";
     case "Compra":
-      return movimiento.compra?.proveedor?.nombre || "Proveedor no especificado";
+      return (
+        movimiento.compra?.proveedor?.nombre || "Proveedor no especificado"
+      );
     default:
       return "N/A";
   }
@@ -90,7 +107,7 @@ const getSourceInfo = (movimiento: Movimiento) => {
 // --- COLUMNAS ---
 const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
   const isDark = theme === "dark";
-  
+
   return [
     {
       accessorKey: "fecha",
@@ -113,13 +130,17 @@ const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
       cell: ({ row }) => (
         <div className="flex items-center gap-2">
           {getTypeIcon(row.original.tipo, theme)}
-          <Badge 
-            variant={row.original.tipo === "Ingreso" || row.original.tipo === "Venta" ? "default" : "destructive"}
+          <Badge
+            variant={
+              row.original.tipo === "Ingreso" || row.original.tipo === "Venta"
+                ? "default"
+                : "destructive"
+            }
             className={cn(
               "text-xs font-medium border-0",
               row.original.tipo === "Ingreso" || row.original.tipo === "Venta"
-                ? isDark 
-                  ? "bg-emerald-950/30 text-emerald-400" 
+                ? isDark
+                  ? "bg-emerald-950/30 text-emerald-400"
                   : "bg-emerald-50 text-emerald-600"
                 : isDark
                 ? "bg-red-950/30 text-red-400"
@@ -135,7 +156,8 @@ const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
       accessorKey: "monto",
       header: () => <div className="text-right font-medium">Monto</div>,
       cell: ({ row }) => {
-        const isPositive = row.original.tipo === "Ingreso" || row.original.tipo === "Venta";
+        const isPositive =
+          row.original.tipo === "Ingreso" || row.original.tipo === "Venta";
         const formatCurrency = (amount: number) => {
           return new Intl.NumberFormat("es-AR", {
             style: "currency",
@@ -144,17 +166,25 @@ const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
             maximumFractionDigits: 0,
           }).format(amount);
         };
-        
+
         return (
           <div className="flex items-center justify-end gap-1">
-            <span className={cn(
-              "font-semibold text-sm",
-              isPositive 
-                ? isDark ? "text-emerald-400" : "text-emerald-600"
-                : isDark ? "text-red-400" : "text-red-600"
-            )}>
+            <span
+              className={cn(
+                "font-semibold text-sm",
+                isPositive
+                  ? isDark
+                    ? "text-emerald-400"
+                    : "text-emerald-600"
+                  : isDark
+                  ? "text-red-400"
+                  : "text-red-600"
+              )}
+            >
               {isPositive ? "+" : ""}
-              {formatCurrency(isPositive ? row.original.monto : -row.original.monto)}
+              {formatCurrency(
+                isPositive ? row.original.monto : -row.original.monto
+              )}
             </span>
           </div>
         );
@@ -162,7 +192,9 @@ const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
     },
     {
       accessorKey: "origen",
-      header: () => <div className="text-left font-medium hidden lg:block">Origen</div>,
+      header: () => (
+        <div className="text-left font-medium hidden lg:block">Origen</div>
+      ),
       cell: ({ row }) => (
         <div className="hidden lg:block">
           <span className="text-sm text-muted-foreground truncate max-w-[140px] block">
@@ -178,8 +210,8 @@ const getColumnasMovimiento = (theme?: string): ColumnDef<Movimiento>[] => {
       ),
       cell: ({ row }) => (
         <div className="hidden md:block">
-          <span 
-            className="text-sm truncate max-w-[160px] block" 
+          <span
+            className="text-sm truncate max-w-[160px] block"
             title={row.original.descripcion || ""}
           >
             {row.original.descripcion || "-"}
@@ -234,7 +266,10 @@ function LoadingState() {
       <CardContent>
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 animate-pulse">
+            <div
+              key={i}
+              className="flex items-center justify-between p-3 rounded-lg bg-muted/30 animate-pulse"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-muted rounded-lg" />
                 <div className="space-y-1">
@@ -259,13 +294,16 @@ function ErrorState({ error, onRetry }: { error: Error; onRetry: () => void }) {
         <div className="flex items-start gap-3">
           <AlertTriangle className="w-5 h-5 text-destructive mt-1" />
           <div className="flex-1">
-            <p className="font-medium text-destructive">Error al cargar movimientos</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              {error.message || "No se pudieron cargar los datos de movimientos"}
+            <p className="font-medium text-destructive">
+              Error al cargar movimientos
             </p>
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <p className="text-sm text-muted-foreground mt-1">
+              {error.message ||
+                "No se pudieron cargar los datos de movimientos"}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
               className="mt-3"
               onClick={onRetry}
             >
@@ -286,10 +324,12 @@ function EmptyState() {
       <div className="p-4 rounded-full bg-muted/30 w-fit mx-auto mb-4">
         <Activity className="w-8 h-8 text-muted-foreground" />
       </div>
-      <h3 className="font-medium text-lg mb-2">No hay movimientos registrados</h3>
+      <h3 className="font-medium text-lg mb-2">
+        No hay movimientos registrados
+      </h3>
       <p className="text-muted-foreground text-sm max-w-md mx-auto">
-        Los movimientos aparecerán automáticamente cuando registres ingresos, egresos, 
-        ventas o compras en el sistema.
+        Los movimientos aparecerán automáticamente cuando registres ingresos,
+        egresos, ventas o compras en el sistema.
       </p>
     </div>
   );
@@ -298,7 +338,12 @@ function EmptyState() {
 // --- COMPONENTE PRINCIPAL ---
 export function DataTable({ userId }: { userId: string }) {
   const { theme } = useTheme();
-  const { data = [], isLoading, error, refetch } = useMovimientosRecientes(userId);
+  const {
+    data = [],
+    isLoading,
+    error,
+    refetch,
+  } = useMovimientosRecientes(userId);
 
   const columns = React.useMemo(() => getColumnasMovimiento(theme), [theme]);
 
@@ -317,10 +362,12 @@ export function DataTable({ userId }: { userId: string }) {
   }
 
   return (
-    <Card className={cn(
-      "border-0 shadow-lg hover:shadow-xl transition-all duration-300",
-      "bg-gradient-to-br from-background via-background to-muted/20"
-    )}>
+    <Card
+      className={cn(
+        "border-0 shadow-lg hover:shadow-xl transition-all duration-300",
+        "bg-gradient-to-br from-background via-background to-muted/20"
+      )}
+    >
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -334,16 +381,16 @@ export function DataTable({ userId }: { userId: string }) {
               </CardDescription>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             className="gap-2 hover:bg-primary/5"
             asChild
           >
-            <a href="/dashboard/movimientos">
+            <Link href="/dashboard/movimientos">
               Ver todos
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </Button>
         </div>
       </CardHeader>
@@ -357,8 +404,8 @@ export function DataTable({ userId }: { userId: string }) {
               <Table>
                 <TableHeader>
                   {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow 
-                      key={headerGroup.id} 
+                    <TableRow
+                      key={headerGroup.id}
                       className="bg-muted/30 hover:bg-muted/50 border-b border-border/50"
                     >
                       {headerGroup.headers.map((header) => (
@@ -379,8 +426,8 @@ export function DataTable({ userId }: { userId: string }) {
                 </TableHeader>
                 <TableBody>
                   {table.getRowModel().rows.map((row, index) => (
-                    <TableRow 
-                      key={row.id} 
+                    <TableRow
+                      key={row.id}
                       className={cn(
                         "border-b border-border/30 transition-colors",
                         "hover:bg-muted/40 group",
@@ -388,10 +435,7 @@ export function DataTable({ userId }: { userId: string }) {
                       )}
                     >
                       {row.getVisibleCells().map((cell) => (
-                        <TableCell
-                          key={cell.id}
-                          className="px-4 py-3"
-                        >
+                        <TableCell key={cell.id} className="px-4 py-3">
                           {flexRender(
                             cell.column.columnDef.cell,
                             cell.getContext()
@@ -408,7 +452,10 @@ export function DataTable({ userId }: { userId: string }) {
               <p className="text-sm text-muted-foreground">
                 Mostrando {data.length} movimientos más recientes
               </p>
-              <Badge variant="outline" className="text-xs bg-primary/5 border-primary/20">
+              <Badge
+                variant="outline"
+                className="text-xs bg-primary/5 border-primary/20"
+              >
                 Actualizado hace {Math.floor(Math.random() * 5) + 1} min
               </Badge>
             </div>

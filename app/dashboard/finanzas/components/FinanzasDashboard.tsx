@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -46,6 +52,7 @@ import {
 
 import { useFinanzas } from "@/lib/react-query/queries/finanzas/useFinanzas";
 import { FinancialSummary } from "@/types/finanzas";
+import Link from "next/link";
 
 interface FinanzasDashboardProps {
   userId: string;
@@ -82,7 +89,9 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="text-red-500 text-lg">Error al cargar datos financieros</div>
+          <div className="text-red-500 text-lg">
+            Error al cargar datos financieros
+          </div>
           <Button onClick={() => refetch()} variant="outline">
             <RefreshCw className="w-4 h-4 mr-2" />
             Reintentar
@@ -135,7 +144,7 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
             Dashboard completo de tu situación financiera
           </p>
         </div>
-        
+
         <div className="flex items-center gap-3">
           <Select value={timeRange} onValueChange={setTimeRange}>
             <SelectTrigger className="w-32">
@@ -149,12 +158,12 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
               <SelectItem value="12m">12 meses</SelectItem>
             </SelectContent>
           </Select>
-          
+
           <Button variant="outline" size="sm">
             <Download className="w-4 h-4 mr-2" />
             Exportar
           </Button>
-          
+
           <Button onClick={() => refetch()} variant="outline" size="sm">
             <RefreshCw className="w-4 h-4 mr-2" />
             Actualizar
@@ -167,9 +176,13 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
         {/* Balance Neto */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-500 to-emerald-600 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium opacity-90">Balance Neto</CardTitle>
+            <CardTitle className="text-sm font-medium opacity-90">
+              Balance Neto
+            </CardTitle>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{formatCurrency(finanzas.balanceNeto)}</span>
+              <span className="text-2xl font-bold">
+                {formatCurrency(finanzas.balanceNeto)}
+              </span>
               <Target className="w-8 h-8 opacity-80" />
             </div>
           </CardHeader>
@@ -190,16 +203,21 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
         {/* Total Ingresos */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-500 to-blue-600 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium opacity-90">Total Ingresos</CardTitle>
+            <CardTitle className="text-sm font-medium opacity-90">
+              Total Ingresos
+            </CardTitle>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{formatCurrency(finanzas.totalIngresos)}</span>
+              <span className="text-2xl font-bold">
+                {formatCurrency(finanzas.totalIngresos)}
+              </span>
               <TrendingUp className="w-8 h-8 opacity-80" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <span className="text-sm opacity-90">
-                Promedio mensual: {formatCurrency(finanzas.promedioIngresosMensual)}
+                Promedio mensual:{" "}
+                {formatCurrency(finanzas.promedioIngresosMensual)}
               </span>
             </div>
           </CardContent>
@@ -208,16 +226,21 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
         {/* Total Egresos */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-red-500 to-red-600 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium opacity-90">Total Egresos</CardTitle>
+            <CardTitle className="text-sm font-medium opacity-90">
+              Total Egresos
+            </CardTitle>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{formatCurrency(finanzas.totalEgresos)}</span>
+              <span className="text-2xl font-bold">
+                {formatCurrency(finanzas.totalEgresos)}
+              </span>
               <TrendingDown className="w-8 h-8 opacity-80" />
             </div>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2">
               <span className="text-sm opacity-90">
-                Promedio mensual: {formatCurrency(finanzas.promedioEgresosMensual)}
+                Promedio mensual:{" "}
+                {formatCurrency(finanzas.promedioEgresosMensual)}
               </span>
             </div>
           </CardContent>
@@ -226,9 +249,13 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
         {/* Transacciones Totales */}
         <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-500 to-purple-600 text-white">
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium opacity-90">Transacciones</CardTitle>
+            <CardTitle className="text-sm font-medium opacity-90">
+              Transacciones
+            </CardTitle>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold">{finanzas.transaccionesTotales}</span>
+              <span className="text-2xl font-bold">
+                {finanzas.transaccionesTotales}
+              </span>
               <Zap className="w-8 h-8 opacity-80" />
             </div>
           </CardHeader>
@@ -274,16 +301,21 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
               <ResponsiveContainer width="100%" height="100%">
                 {chartType === "area" ? (
                   <AreaChart data={finanzas.monthlyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
-                    <XAxis 
-                      dataKey="mes" 
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
+                    <XAxis
+                      dataKey="mes"
                       className="text-xs"
                       tick={{ fontSize: 12 }}
                     />
-                    <YAxis 
+                    <YAxis
                       className="text-xs"
                       tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                      tickFormatter={(value) =>
+                        `$${(value / 1000).toFixed(0)}k`
+                      }
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -308,11 +340,16 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
                   </AreaChart>
                 ) : chartType === "line" ? (
                   <LineChart data={finanzas.monthlyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
                     <XAxis dataKey="mes" className="text-xs" />
-                    <YAxis 
+                    <YAxis
                       className="text-xs"
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                      tickFormatter={(value) =>
+                        `$${(value / 1000).toFixed(0)}k`
+                      }
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
@@ -344,16 +381,31 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
                   </LineChart>
                 ) : (
                   <BarChart data={finanzas.monthlyTrends}>
-                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      className="opacity-30"
+                    />
                     <XAxis dataKey="mes" className="text-xs" />
-                    <YAxis 
+                    <YAxis
                       className="text-xs"
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+                      tickFormatter={(value) =>
+                        `$${(value / 1000).toFixed(0)}k`
+                      }
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Legend />
-                    <Bar dataKey="ingresos" fill={COLORS[1]} name="Ingresos" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="egresos" fill={COLORS[4]} name="Egresos" radius={[2, 2, 0, 0]} />
+                    <Bar
+                      dataKey="ingresos"
+                      fill={COLORS[1]}
+                      name="Ingresos"
+                      radius={[2, 2, 0, 0]}
+                    />
+                    <Bar
+                      dataKey="egresos"
+                      fill={COLORS[4]}
+                      name="Egresos"
+                      radius={[2, 2, 0, 0]}
+                    />
                   </BarChart>
                 )}
               </ResponsiveContainer>
@@ -385,19 +437,27 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
                     paddingAngle={2}
                     dataKey="total"
                   >
-                    {finanzas.categoryBreakdown.slice(0, 8).map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
+                    {finanzas.categoryBreakdown
+                      .slice(0, 8)
+                      .map((entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={COLORS[index % COLORS.length]}
+                        />
+                      ))}
                   </Pie>
-                  <Tooltip 
-                    formatter={(value: number) => [formatCurrency(value), "Total"]}
+                  <Tooltip
+                    formatter={(value: number) => [
+                      formatCurrency(value),
+                      "Total",
+                    ]}
                     labelFormatter={(label) => `Categoría: ${label}`}
                   />
-                  <Legend 
-                    verticalAlign="bottom" 
+                  <Legend
+                    verticalAlign="bottom"
                     height={36}
                     formatter={(value, entry) => (
-                      <span style={{ color: entry.color, fontSize: '12px' }}>
+                      <span style={{ color: entry.color, fontSize: "12px" }}>
                         {value}
                       </span>
                     )}
@@ -428,13 +488,23 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
                 <BarChart data={finanzas.weeklyActivity}>
                   <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                   <XAxis dataKey="dia" className="text-xs" />
-                  <YAxis 
+                  <YAxis
                     className="text-xs"
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
                   />
                   <Tooltip content={<CustomTooltip />} />
-                  <Bar dataKey="ingresos" fill={COLORS[1]} name="Ingresos" radius={[2, 2, 0, 0]} />
-                  <Bar dataKey="egresos" fill={COLORS[4]} name="Egresos" radius={[2, 2, 0, 0]} />
+                  <Bar
+                    dataKey="ingresos"
+                    fill={COLORS[1]}
+                    name="Ingresos"
+                    radius={[2, 2, 0, 0]}
+                  />
+                  <Bar
+                    dataKey="egresos"
+                    fill={COLORS[4]}
+                    name="Egresos"
+                    radius={[2, 2, 0, 0]}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -455,10 +525,13 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
           <CardContent>
             <div className="space-y-4">
               {finanzas.topCategorias.map((categoria, index) => (
-                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                >
                   <div className="flex items-center gap-3">
-                    <div 
-                      className="w-4 h-4 rounded-full" 
+                    <div
+                      className="w-4 h-4 rounded-full"
                       style={{ backgroundColor: COLORS[index % COLORS.length] }}
                     />
                     <div>
@@ -469,7 +542,9 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">{formatCurrency(categoria.total)}</p>
+                    <p className="font-semibold">
+                      {formatCurrency(categoria.total)}
+                    </p>
                     <p className="text-sm text-muted-foreground">
                       {categoria.porcentaje.toFixed(1)}%
                     </p>
@@ -495,38 +570,56 @@ export function FinanzasDashboard({ userId }: FinanzasDashboardProps) {
               </CardDescription>
             </div>
             <Button variant="outline" size="sm" asChild>
-              <a href="/dashboard/movimientos">Ver todas</a>
+              <Link href="/dashboard/movimientos">Ver todas</Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             {finanzas.recentTransactions.map((transaction) => (
-              <div key={transaction.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors">
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${
-                    transaction.tipo === "Ingreso" || transaction.tipo === "Venta" 
-                      ? "bg-green-500" 
-                      : "bg-red-500"
-                  }`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      transaction.tipo === "Ingreso" ||
+                      transaction.tipo === "Venta"
+                        ? "bg-green-500"
+                        : "bg-red-500"
+                    }`}
+                  />
                   <div>
-                    <p className="font-medium">{transaction.descripcion || "Sin descripción"}</p>
+                    <p className="font-medium">
+                      {transaction.descripcion || "Sin descripción"}
+                    </p>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Badge variant="outline" className="text-xs">
                         {transaction.tipo}
                       </Badge>
                       <span>{transaction.categoria}</span>
                       <span>•</span>
-                      <span>{new Date(transaction.fecha).toLocaleDateString("es-ES")}</span>
+                      <span>
+                        {new Date(transaction.fecha).toLocaleDateString(
+                          "es-ES"
+                        )}
+                      </span>
                     </div>
                   </div>
                 </div>
-                <div className={`font-semibold ${
-                  transaction.tipo === "Ingreso" || transaction.tipo === "Venta"
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}>
-                  {transaction.tipo === "Ingreso" || transaction.tipo === "Venta" ? "+" : "-"}
+                <div
+                  className={`font-semibold ${
+                    transaction.tipo === "Ingreso" ||
+                    transaction.tipo === "Venta"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {transaction.tipo === "Ingreso" ||
+                  transaction.tipo === "Venta"
+                    ? "+"
+                    : "-"}
                   {formatCurrency(transaction.monto)}
                 </div>
               </div>
